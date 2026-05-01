@@ -1,0 +1,142 @@
+.container {
+  padding: 24px;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  background: white;
+  padding: 20px 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.postCard {
+  border-radius: 16px !important;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.postCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.thumbnail {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.categoryTag {
+  margin-bottom: 8px;
+  border-radius: 20px;
+  padding: 0 12px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #1e293b;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.subTitle {
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 12px;
+  font-style: italic;
+}
+.container {
+  padding: 32px;
+  background-color: #f8fafc;
+}
+
+.postCard {
+  border-radius: 20px !important; /* Bo góc tròn hơn cho hiện đại */
+  overflow: hidden;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background: #fff;
+}
+
+.postCard:hover {
+  transform: translateY(-10px);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+.thumbnailWrapper {
+  position: relative;
+  overflow: hidden;
+  height: 200px;
+}
+
+.thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.postCard:hover .thumbnail {
+  transform: scale(1.1); /* Rê chuột vào ảnh tự phóng to nhẹ */
+}
+
+.categoryTag {
+  margin-bottom: 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  border: none;
+}
+
+/* Ép tiêu đề lớn tối đa 2 dòng */
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  height: 50px; /* Giữ khung cố định để các card đều nhau */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ép tiêu đề nhỏ/Sapo tối đa 2 dòng */
+.subTitle {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+  height: 42px; /* Giữ khung cố định */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tùy chỉnh phần nút bấm bên dưới */
+.postCard :global(.ant-card-actions) {
+  background: #fff;
+  border-top: 1px solid #f1f5f9;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}

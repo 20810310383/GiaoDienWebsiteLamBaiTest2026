@@ -1,0 +1,356 @@
+/* =========================================
+   NAVBAR — Neon Cosmos Theme
+   ========================================= */
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 24px;
+  height: 64px;
+  background: rgba(7, 8, 15, 0.7);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-bottom: 1px solid var(--border-subtle);
+  transition:
+    background var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
+  flex-shrink: 0;
+}
+
+.scrolled {
+  background: rgba(7, 8, 15, 0.92);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Gradient top border line */
+.navbar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(124, 58, 237, 0.5) 30%,
+    rgba(6, 182, 212, 0.5) 70%,
+    transparent 100%
+  );
+}
+
+/* ─── Left ─── */
+.left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+/* ─── Icon Button ─── */
+.iconBtn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-spring);
+  flex-shrink: 0;
+}
+
+.iconBtn svg {
+  width: 17px;
+  height: 17px;
+}
+
+.iconBtn:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  border-color: rgba(124, 58, 237, 0.3);
+  box-shadow: 0 0 16px rgba(124, 58, 237, 0.2);
+  transform: scale(1.08);
+}
+
+.iconBtn:active {
+  transform: scale(0.96);
+}
+
+.menuBtn {
+  transition:
+    all var(--duration-fast) var(--ease-spring),
+    transform var(--duration-fast) ease;
+}
+
+.menuOpen {
+  background: rgba(124, 58, 237, 0.15);
+  border-color: rgba(124, 58, 237, 0.4);
+  color: #a78bfa;
+}
+
+/* ─── Breadcrumb ─── */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.breadcrumbRoot {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.breadcrumbSep {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.breadcrumbCurrent {
+  font-family: "Syne", sans-serif;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--grad-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Search Bar ─── */
+.searchBar {
+  flex: 1;
+  max-width: 420px;
+  margin: 0 auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  display: flex;
+  pointer-events: none;
+  transition: color var(--duration-fast) ease;
+}
+
+.searchIcon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.searchInput {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 9px 80px 9px 38px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+  transition: all var(--duration-fast) ease;
+}
+
+.searchInput::placeholder {
+  color: var(--text-muted);
+}
+
+.searchInput:focus {
+  background: var(--bg-card-hover);
+  border-color: rgba(124, 58, 237, 0.45);
+  box-shadow:
+    0 0 0 3px rgba(124, 58, 237, 0.12),
+    0 0 20px rgba(124, 58, 237, 0.15);
+}
+
+.searchActive .searchIcon {
+  color: #a78bfa;
+}
+
+.searchClear {
+  position: absolute;
+  right: 50px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 4px;
+  transition: color var(--duration-fast) ease;
+}
+
+.searchClear:hover {
+  color: var(--text-primary);
+}
+
+.searchKbd {
+  position: absolute;
+  right: 12px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: 5px;
+  padding: 2px 6px;
+  pointer-events: none;
+}
+
+/* ─── Right ─── */
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.dateChip {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  padding: 5px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  font-weight: 400;
+}
+
+/* Notification badge */
+.notifBadge {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-pink);
+  border: 1.5px solid var(--bg-base);
+  box-shadow: 0 0 8px rgba(236, 72, 153, 0.7);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.85);
+  }
+}
+
+/* ─── User Chip ─── */
+.userChip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 12px 5px 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 40px;
+  cursor: pointer;
+  transition: all var(--duration-fast) ease;
+}
+
+.userChip:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(124, 58, 237, 0.3);
+  box-shadow: 0 0 16px rgba(124, 58, 237, 0.15);
+}
+
+.chipAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--grad-warm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Syne", sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.35);
+  flex-shrink: 0;
+}
+
+.chipInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.chipName {
+  font-family: "Syne", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.chipRole {
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 900px) {
+  .dateChip {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 14px;
+    gap: 8px;
+  }
+  .searchBar {
+    max-width: none;
+  }
+  .breadcrumb {
+    display: none;
+  }
+  .chipInfo {
+    display: none;
+  }
+  .userChip {
+    padding: 5px;
+    border-radius: 50%;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    height: 56px;
+  }
+  .searchBar {
+    max-width: 160px;
+  }
+  .searchKbd {
+    display: none;
+  }
+}
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+}

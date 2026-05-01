@@ -1,0 +1,181 @@
+.container {
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.titleArea h2 {
+  color: var(--accent);
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Card chứa nội dung */
+.contentCard {
+  background: var(--sidebar-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+}
+
+/* Search bar theo style của anh */
+.searchBar {
+  background: var(--bg-main) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  color: var(--text-main) !important;
+  width: 300px;
+  margin-bottom: 20px;
+}
+
+.searchBar :global(.ant-input) {
+  background: transparent !important;
+  color: var(--text-main) !important;
+}
+
+/* Tùy chỉnh Table */
+.table :global(.ant-table) {
+  background: transparent !important;
+  color: var(--text-main) !important;
+}
+
+.table :global(.ant-table-thead > tr > th) {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: var(--accent) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.table :global(.ant-table-row:hover > td) {
+  background: rgba(16, 185, 129, 0.05) !important;
+}
+
+/* Upload style */
+.uploadArea {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.uploadArea:hover {
+  border-color: var(--accent);
+}
+
+.previewImg {
+  width: 100%;
+  max-height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .searchBar {
+    width: 100%;
+  }
+}
+/* --- Ép màu chữ và Placeholder theo biến hệ thống --- */
+
+/* 1. Đối với ô Input tìm kiếm và Input trong Modal */
+.searchBar :global(.ant-input),
+:global(.ant-modal-content) :global(.ant-input),
+:global(.ant-modal-content) :global(.ant-input-password input),
+:global(.ant-modal-content) :global(.ant-input-textarea textarea) {
+  color: var(--text-main) !important;
+  background-color: transparent !important;
+}
+
+/* 2. Placeholder chữ trắng mờ (dùng biến --text-sub) */
+.searchBar :global(.ant-input::placeholder),
+:global(.ant-modal-content) :global(.ant-input::placeholder),
+:global(.ant-modal-content) :global(.ant-input-textarea textarea::placeholder) {
+  color: var(--text-sub) !important;
+  opacity: 0.7 !important; /* Độ mờ vừa phải để trông sang trọng */
+}
+
+/* 3. Xử lý icon kính lúp và các icon prefix */
+.searchBar :global(.ant-input-prefix) {
+  color: var(--text-sub) !important;
+  margin-right: 8px;
+}
+
+/* 4. Đảm bảo nền của Input trong Modal không bị đen đặc */
+:global(.ant-modal-content) :global(.ant-input-affix-wrapper),
+:global(.ant-modal-content) :global(.ant-input-textarea) {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* 5. Khi nhấn vào ô nhập liệu (Focus) */
+.searchBar:global(.ant-input-affix-wrapper-focused),
+:global(.ant-modal-content) :global(.ant-input-affix-wrapper-focused) {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1) !important;
+}
+
+/* --- MODAL REDESIGN --- */
+:global(.ant-modal-content) {
+  border: 1px solid var(--border) !important;
+  border-radius: 24px !important;
+  padding: 12px !important;
+}
+
+:global(.ant-modal-header) {
+  background: transparent !important;
+  border: none !important;
+}
+
+:global(.ant-modal-title) {
+  color: var(--accent) !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  text-align: center;
+}
+
+.uploadDragger {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 2px dashed var(--border) !important;
+  border-radius: 16px !important;
+  transition: all 0.3s;
+}
+
+.uploadDragger:hover {
+  border-color: var(--accent) !important;
+  background: rgba(16, 185, 129, 0.05) !important;
+}
+
+.btnUpdate {
+  background: var(--accent) !important;
+  border-radius: 12px !important;
+
+  /* Ép màu chữ trực tiếp tại đây */
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btnUpdate:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Xử lý khi nút đang Loading để chữ không bị mờ */
+.btnUpdate:global(.ant-btn-loading) {
+  opacity: 0.8;
+  color: #ffffff !important;
+}

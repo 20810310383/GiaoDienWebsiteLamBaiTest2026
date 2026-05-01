@@ -1,0 +1,174 @@
+.container {
+  padding: 24px;
+  background: transparent;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.titleArea h2 {
+  color: #10b981;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.ten {
+  color: var(--text-main);
+  font-weight: 600;
+}
+.lienHe {
+  color: var(--text-main);
+}
+
+.titleArea p {
+  color: #94a3b8;
+  margin: 4px 0 0 0;
+}
+
+.filterCard {
+  /* background: rgba(30, 41, 59, 0.7); */
+  background: var(--sidebar-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Custom Table Antd */
+.tableCard {
+  /* background: rgba(30, 41, 59, 0.7); */
+  background: var(--sidebar-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.tableCard :global(.ant-table) {
+  background: transparent !important;
+  color: #f8fafc !important;
+}
+
+.tableCard :global(.ant-table-thead > tr > th) {
+  /* background: rgba(15, 23, 42, 0.5) !important; */
+  background: var(--sidebar-bg);
+  color: var(--accent);
+  /* color: #10b981 !important; */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.tableCard :global(.ant-table-tbody > tr > td) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.tableCard :global(.ant-table-tbody > tr:hover > td) {
+  background: rgba(16, 185, 129, 0.05) !important;
+}
+
+/* Badge trạng thái */
+.statusBadge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.active {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+.locked {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.actionBtns {
+  display: flex;
+  gap: 8px;
+}
+
+.searchBar {
+  /* Dùng biến của anh để tự động đổi màu nền */
+  background-color: var(--bg-main) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  width: 300px;
+  transition: all 0.3s ease;
+}
+/* Ép màu cho Placeholder của Input */
+.searchBar :global(.ant-input::placeholder) {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Ép màu cho Placeholder của các ô Select (Vai trò, Trạng thái) */
+.filterCard :global(.ant-select-selection-placeholder) {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Đảm bảo chữ bên trong ô tìm kiếm cũng màu trắng */
+.searchBar :global(.ant-input) {
+  color: #ffffff !important;
+}
+
+/* Tùy chỉnh màu sắc cho các ô Select khi đã chọn */
+.filterCard :global(.ant-select-selector) {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  border-radius: 8px !important;
+}
+
+.filterCard :global(.ant-select-selection-item) {
+  color: #ffffff !important;
+}
+
+/* Màu cho icon mũi tên của Select */
+.filterCard :global(.ant-select-arrow) {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Tùy chỉnh giao diện Modal - Placeholder bên trong Modal */
+:global(.ant-modal-content) :global(.ant-input::placeholder) {
+  color: rgba(
+    0,
+    0,
+    0,
+    0.35
+  ) !important; /* Bên trong Modal nền trắng nên để placeholder tối cho dễ nhìn */
+}
+.searchBar :global(.ant-input-affix-wrapper),
+.filterCard :global(.ant-select-selector) {
+  background-color: var(--bg-main) !important; /* Nền input giống nền trang */
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  color: var(--text-main) !important;
+}
+
+.searchBar :global(.ant-input) {
+  background-color: transparent !important;
+  color: var(--text-main) !important;
+}
+
+.searchBar :global(.ant-input::placeholder),
+.filterCard :global(.ant-select-selection-placeholder) {
+  color: var(--text-sub) !important;
+  opacity: 0.7;
+}
+
+.filterCard :global(.ant-select-selection-item) {
+  color: var(--text-main) !important;
+}
+
+.filterCard :global(.ant-select-arrow) {
+  color: var(--text-sub) !important;
+}

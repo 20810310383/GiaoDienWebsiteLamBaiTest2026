@@ -1,0 +1,49 @@
+.container {
+  padding: 20px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+}
+.titleBox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mainIcon {
+  font-size: 24px;
+  color: #c6873e;
+}
+.formRow {
+  display: flex;
+  gap: 20px;
+}
+.flex1 {
+  flex: 1;
+}
+.flex2 {
+  flex: 2;
+}
+.table {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.addBtn {
+  background: #10b981 !important;
+  border-color: #10b981 !important;
+  font-weight: 700 !important;
+  height: 45px !important;
+  border-radius: 10px !important;
+  color: white !important;
+}
+
+.addBtn:hover {
+  background: #10b981 !important;
+  border-color: #10b981 !important;
+}

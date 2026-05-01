@@ -1,0 +1,698 @@
+/* Container chính thừa hưởng biến từ AdminContainer của Dũng */
+.adminWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  color: var(--text-main);
+  background-color: var(--bg-main);
+  transition: all 0.3s ease;
+}
+
+/* --- HEADER & TABS --- */
+.adminHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.tabs {
+  background: var(--sidebar-bg);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: flex;
+}
+
+.tabs button {
+  padding: 8px 18px;
+  border: none;
+  background: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-sub);
+  transition: 0.3s;
+}
+
+.activeTab {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+/* --- CONTENT CARD & TABLE --- */
+.contentCard {
+  background: var(--sidebar-bg);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* Ghi đè CSS của Ant Design Table */
+.contentCard :global(.ant-table) {
+  background: transparent !important;
+  color: var(--text-main) !important;
+}
+
+.contentCard :global(.ant-table-thead > tr > th) {
+  background: var(--bg-main) !important;
+  color: var(--text-sub) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.contentCard :global(.ant-table-tbody > tr > td) {
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text-main) !important;
+}
+
+.contentCard :global(.ant-table-row:hover > td) {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* --- FIX INPUT & PLACEHOLDER (QUAN TRỌNG) --- */
+:global(.ant-input),
+:global(.ant-select-selector),
+:global(.ant-input-number),
+:global(.ant-input-affix-wrapper) {
+  background-color: var(--bg-main) !important;
+  border-color: var(--border) !important;
+  color: var(--text-main) !important;
+}
+
+/* Làm sáng Placeholder cho chế độ tối */
+:global(.ant-input::placeholder),
+:global(.ant-select-selection-placeholder) {
+  color: #94a3b8 !important; /* Màu xám sáng dễ nhìn */
+  opacity: 0.8;
+}
+
+/* Khi hover/focus vào input */
+:global(.ant-input:focus),
+:global(.ant-input-focused) {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1) !important;
+}
+
+/* --- MODAL TRÊN NỀN TỐI/SÁNG --- */
+.customModal :global(.ant-modal-content) {
+  background-color: white !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.customModal :global(.ant-modal-header) {
+  background-color: var(--sidebar-bg) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.customModal :global(.ant-modal-title) {
+  color: var(--text-main) !important;
+}
+
+.customModal :global(.ant-modal-close) {
+  color: var(--text-sub) !important;
+}
+
+/* --- CATEGORY GRID --- */
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.catCard {
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  padding: 24px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: all 0.3s ease;
+}
+
+.catCard:hover {
+  border-color: var(--accent);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.catIcon {
+  font-size: 2.2rem;
+  background: var(--sidebar-bg);
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+}
+
+/* --- BUTTON & TAGS --- */
+.btnAdd {
+  background: var(--accent) !important;
+  border: none !important;
+  height: 42px;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+}
+
+.statusActive {
+  background: rgba(16, 185, 129, 0.1) !important;
+  color: var(--accent) !important;
+  border: 1px solid rgba(16, 185, 129, 0.2) !important;
+}
+
+/* --- FORM LAYOUT --- */
+.docFormGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+  .docFormGrid {
+    grid-template-columns: 1fr;
+  }
+}
+/* Custom Modal Title */
+.modalTitleCustom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-main);
+}
+
+.modernForm {
+  padding-top: 10px;
+}
+
+.formSection {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.sectionTitle {
+  font-size: 0.9rem;
+  color: var(--accent);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.inputRow {
+  display: flex;
+  gap: 16px;
+}
+
+.flex2 {
+  flex: 2;
+}
+.flex1 {
+  flex: 1;
+}
+
+/* Dragger Custom */
+.draggerCustom {
+  background: var(--bg-main) !important;
+  border: 2px dashed var(--border) !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease;
+}
+
+.draggerCustom:hover {
+  border-color: var(--accent) !important;
+}
+
+:global(.ant-upload-text) {
+  color: var(--text-main) !important;
+  font-weight: 600;
+}
+
+:global(.ant-upload-hint) {
+  color: var(--text-sub) !important;
+}
+
+.fileStatusBadge {
+  margin-top: 10px;
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--accent);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid var(--accent);
+}
+
+/* Modal Footer */
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.btnSubmitLarge {
+  min-width: 150px;
+  background: green !important;
+  border: none;
+  font-weight: 700 !important;
+}
+
+/* Fix Placeholder màu sáng rõ cho Dark Mode */
+.modernForm :global(.ant-input::placeholder),
+.modernForm :global(.ant-select-selection-placeholder),
+.modernForm :global(.ant-input-textarea-show-count::after) {
+  color: #94a3b8 !important; /* Màu xám xanh nhạt, rất rõ trên nền tối */
+  opacity: 1;
+}
+.fileCardPreview {
+  display: flex;
+  align-items: center;
+  background: var(--bg-main);
+  border: 1px solid var(--accent);
+  padding: 12px 16px;
+  border-radius: 12px;
+  gap: 12px;
+  position: relative;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fileIconBox {
+  width: 44px;
+  height: 44px;
+  background: rgba(16, 185, 129, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.fileInfoDetail {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fileNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fileNameLabel {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.fileTypeTag {
+  font-size: 0.7rem !important;
+  line-height: 1.5 !important;
+  border-radius: 4px !important;
+  margin: 0 !important;
+}
+
+.fileSizeText {
+  font-size: 0.8rem;
+  color: var(--text-sub);
+}
+
+.btnDeleteFile {
+  opacity: 0.6;
+  transition: 0.3s;
+}
+
+.btnDeleteFile:hover {
+  opacity: 1;
+  background: rgba(239, 68, 68, 0.1) !important;
+}
+
+.draggerText {
+  color: var(--text-main);
+  font-weight: 500;
+  margin: 10px 0 0 !important;
+}
+/* Container tổng thể */
+.premiumUploadSection {
+  margin-top: 8px;
+  width: 100%;
+}
+
+.premiumFormItem :global(.ant-form-item-label > label) {
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+/* --- STYLE PRO 1: PREMIUM DRAGGER (CHƯA CÓ FILE) --- */
+.premiumDragger {
+  background: var(--bg-main) !important; /* Dùng màu nền tối hơn sidebar */
+  border: 1.5px dashed var(--border) !important;
+  border-radius: 16px !important;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1) !important;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); /* Tạo chiều sâu lún xuống */
+}
+
+.premiumDragger:hover {
+  border-color: var(--accent) !important;
+  background: rgba(16, 185, 129, 0.02) !important;
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.2),
+    inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.draggerPremiumContent {
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.iconUploadWrapper {
+  width: 68px;
+  height: 68px;
+  background: var(--sidebar-bg); /* Sáng hơn nền dragger */
+  border: 1px solid var(--border);
+  border-radius: 20px; /* Bo góc hiện đại */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.premiumDragger:hover .iconUploadWrapper {
+  background: var(--sidebar-bg);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+  transform: scale(1.03) rotate(3deg);
+}
+
+.textUploadGroup {
+  text-align: center;
+}
+
+.mainUploadText {
+  margin: 0 0 6px 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.2px;
+}
+
+.subUploadText {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-sub);
+}
+
+.browseText {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1.5px solid transparent;
+  transition: 0.3s;
+}
+
+.premiumDragger:hover .browseText {
+  border-bottom-color: var(--accent);
+}
+
+.supportInfoTag {
+  background: var(--sidebar-bg);
+  border: 1px solid var(--border);
+  color: var(--text-sub);
+  padding: 6px 16px;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* --- STYLE PRO 2: PREMIUM FILE WIDGET (ĐÃ CÓ FILE) --- */
+.premiumFileWidget {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--sidebar-bg);
+  border: 1px solid var(--border);
+  padding: 18px;
+  border-radius: 18px;
+  gap: 16px;
+  position: relative;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1); /* Bóng đổ mềm hơn */
+  animation: premiumWidgetIn 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  transition: all 0.3s ease;
+}
+
+@keyframes premiumWidgetIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.premiumFileWidget:hover {
+  border-color: var(--accent);
+  box-shadow: 0 20px 50px rgba(16, 185, 129, 0.08);
+}
+
+.fileWidgetLead {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 0; /* Tránh tràn layout */
+}
+
+.fileWidgetIconContainer {
+  width: 52px;
+  height: 52px;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fileWidgetMeta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.fileWidgetHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.fileStatusHeading {
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.fileWidgetSizeLabel {
+  font-size: 0.8rem;
+  color: var(--text-sub);
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 3px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.fileWidgetSubRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.premiumFileTypeTag {
+  background: rgba(16, 185, 129, 0.05) !important;
+  color: var(--accent) !important;
+  border: 1px solid rgba(16, 185, 129, 0.2) !important;
+  font-size: 0.75rem !important;
+  font-weight: 800 !important;
+  border-radius: 6px !important;
+  margin: 0 !important;
+  padding: 0 8px !important;
+  height: 22px !important;
+  line-height: 20px !important;
+}
+
+.fileWidgetPathTruncate {
+  font-size: 0.85rem;
+  color: var(--text-sub);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  font-family: "Roboto Mono", monospace; /* Hiển thị path/name nhìn pro hơn */
+  opacity: 0.8;
+}
+
+/* Nút xóa File Widget cao cấp */
+.btnPremiumRemoveFile {
+  width: 32px;
+  height: 32px;
+  background: var(--bg-main) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-sub) !important;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0; /* Không cho nút co lại */
+}
+
+.btnPremiumRemoveFile:hover {
+  background: #fee2e2 !important; /* Màu đỏ nhạt */
+  color: #ef4444 !important; /* Màu đỏ đậm */
+  border-color: #ef4444 !important;
+  transform: rotate(90deg) scale(1.1);
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+}
+.fileCardPremium {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  background: var(--sidebar-bg); /* Màu nền admin */
+  border: 1px solid var(--accent); /* Viền màu xanh lá nhạt của Dũng */
+  border-radius: 16px;
+  position: relative;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filePreviewIcon {
+  width: 52px;
+  height: 52px;
+  background: var(--bg-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.fileMainInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.fileNameHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fileTitleLabel {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.typeBadge {
+  background: rgba(16, 185, 129, 0.1) !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--accent) !important;
+  font-size: 0.7rem !important;
+  font-weight: 800 !important;
+  padding: 0 6px !important;
+}
+
+.fileSubInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: var(--text-sub);
+}
+
+.divider {
+  opacity: 0.3;
+}
+
+.statusSuccess {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.btnResetFile {
+  background: var(--bg-main) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  transition: 0.3s !important;
+}
+
+.btnResetFile:hover {
+  background: #fee2e2 !important;
+  color: #ef4444 !important;
+  transform: rotate(90deg);
+}
+.tableFilter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}

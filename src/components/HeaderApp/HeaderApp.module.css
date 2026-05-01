@@ -1,0 +1,387 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  z-index: 1000;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.scrolled {
+  height: 70px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.container {
+  max-width: 1300px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.logoIcon {
+  background: #10b981;
+  color: white;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+}
+
+.logo span span {
+  color: #10b981;
+}
+
+/* Desktop Nav */
+.desktopNav {
+  display: flex;
+  gap: 30px;
+}
+
+.desktopNav a {
+  text-decoration: none;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: 0.3s;
+}
+
+.desktopNav a:hover,
+.desktopNav a.active {
+  color: #10b981;
+}
+
+/* User Profile & Actions */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.userProfile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 6px 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 50px;
+  transition: 0.3s;
+}
+
+.userProfile:hover {
+  border-color: #10b981;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+}
+
+.userName {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 0.9rem;
+}
+
+.registerBtn {
+  text-decoration: none;
+  background: #1e293b;
+  color: white;
+  padding: 10px 22px;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.registerBtn:hover {
+  background: #10b981;
+}
+
+/* Mobile Sidebar Styles */
+.mobileToggle {
+  display: none;
+  background: none;
+  border: none;
+  color: #1e293b;
+  cursor: pointer;
+}
+
+.mobileMenu {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 300px;
+  height: 100vh;
+  background: white;
+  z-index: 2000;
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+  transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 40px 25px;
+}
+
+.menuOpen {
+  right: 0;
+}
+
+.mobileUserBox {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.mobileUserDetail {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobileName {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #1e293b;
+}
+
+.mobileRole {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.mobileDivider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 20px 0;
+}
+
+.mobileNavLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.mobileNavLinks a {
+  text-decoration: none;
+  color: #475569;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 10px 0;
+}
+
+.mobileLogout {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ef4444;
+  background: #fff1f2;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Hide on Mobile */
+@media (max-width: 1024px) {
+  .desktopNav,
+  .desktopUserAction {
+    display: none;
+  }
+  .mobileToggle {
+    display: block;
+  }
+}
+/* Ghi đè toàn bộ nền của Dropdown Menu */
+:global(.ant-dropdown .ant-dropdown-menu) {
+  background-color: #ffffff !important; /* Nền trắng tinh */
+  border-radius: 12px !important;
+  padding: 8px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important; /* Đổ bóng nhẹ */
+  border: 1px solid #f1f5f9 !important;
+}
+
+/* Ghi đè màu chữ và icon của từng Item */
+:global(.ant-dropdown-menu-item) {
+  transition: all 0.2s ease !important;
+}
+
+/* Màu chữ mặc định (đang bị xám tối trong hình của bạn) */
+:global(.ant-dropdown-menu-item span),
+:global(.ant-dropdown-menu-item a) {
+  color: #334155 !important; /* Màu xanh đen Slate 700 */
+  font-weight: 500 !important;
+}
+
+/* Màu icon mặc định */
+:global(.ant-dropdown-menu-item svg) {
+  color: #64748b !important; /* Màu icon xám nhạt */
+}
+
+/* Hiệu ứng khi Hover: Chữ sáng xanh, nền xanh nhạt */
+:global(.ant-dropdown-menu-item:hover) {
+  background-color: #f0fdf4 !important; /* Nền xanh lá cực nhạt */
+}
+
+:global(.ant-dropdown-menu-item:hover span),
+:global(.ant-dropdown-menu-item:hover a),
+:global(.ant-dropdown-menu-item:hover svg) {
+  color: #10b981 !important; /* Màu xanh thương hiệu của bạn */
+}
+
+/* Giữ màu đỏ cho nút Đăng xuất */
+:global(.ant-dropdown-menu-item-danger span),
+:global(.ant-dropdown-menu-item-danger svg) {
+  color: #ef4444 !important;
+}
+/* --- Desktop App Button --- */
+.downloadAppBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 100px;
+  color: #f8fafc;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.downloadAppBtn:hover {
+  background: #10b981; /* Màu xanh lục thương hiệu */
+  border-color: #10b981;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.downloadAppBtn svg {
+  transition: transform 0.3s ease;
+}
+
+.downloadAppBtn:hover svg {
+  transform: scale(1.1);
+}
+
+/* Ẩn trên mobile để dành chỗ cho Menu */
+@media (max-width: 768px) {
+  .downloadAppBtn {
+    display: none;
+  }
+}
+
+/* --- Mobile Promo Section --- */
+.mobileAppPromo {
+  padding: 24px 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.1) 0%,
+    rgba(59, 130, 246, 0.1) 100%
+  );
+  border-radius: 20px;
+  margin: 16px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.promoTitle {
+  font-weight: 800;
+  color: #ffffff;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.mobileAppPromo p {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.googlePlayBadge img {
+  height: 48px;
+  width: auto;
+  transition: transform 0.2s ease;
+}
+
+.googlePlayBadge:active img {
+  transform: scale(0.95);
+}
+
+/* Biến đổi màu sắc nút khi cuộn trang */
+.scrolled .downloadAppBtn {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.2);
+}
+/* Desktop Nav Active */
+.desktopNav a {
+  position: relative;
+  color: #94a3b8; /* Màu mặc định xám */
+  transition: all 0.3s ease;
+}
+
+.desktopNav a.active {
+  color: #10b981; /* Màu xanh active */
+  font-weight: 600;
+}
+
+/* Hiệu ứng gạch chân cho link active trên Desktop */
+.desktopNav a.active::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  background: #10b981;
+  border-radius: 2px;
+}
+
+/* Mobile Nav Active */
+.mobileNavLinks a.active {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border-left: 4px solid #10b981;
+  padding-left: 12px; /* Đẩy chữ sang phải một chút khi active */
+}
+
+/* Wrapper cho nút download để Tooltip hiển thị đúng */
+.downloadWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+/* Trong file HeaderApp.module.css */
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logoImg {
+  height: 100px; /* Điều chỉnh chiều cao này cho phù hợp với thiết kế header của bạn */
+  display: block;
+}

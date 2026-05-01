@@ -1,0 +1,17 @@
+
+{
+  "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://backendktquizz.bevishome.com/sitemap.xml"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "https://backendktquizz.bevishome.com/robots.txt"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ]
+}

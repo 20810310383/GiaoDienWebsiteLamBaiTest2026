@@ -1,0 +1,38 @@
+.authModal :global(.ant-modal-content) {
+  border-radius: 12px;
+  padding: 20px 10px;
+}
+
+.authModal :global(.ant-tabs-tab-btn) {
+  font-weight: 700 !important;
+  letter-spacing: 1px;
+}
+
+.authModal :global(.ant-tabs-ink-bar) {
+  background: #c6873e !important; /* Màu vàng đồng thương hiệu */
+}
+
+.authModal :global(.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn) {
+  color: #c6873e !important;
+}
+
+.submitBtn {
+  background-color: #1a1a1a !important; /* Màu đen chủ đạo */
+  border-color: #1a1a1a !important;
+  font-weight: 600;
+  margin-top: 10px;
+  height: 45px;
+}
+
+.submitBtn:hover {
+  background-color: #c6873e !important;
+  border-color: #c6873e !important;
+}
+
+.authModal :global(.ant-input-affix-wrapper-lg) {
+  padding: 10px 15px;
+}
+
+.authModal :global(.ant-form-item) {
+  margin-bottom: 16px;
+}

@@ -1,0 +1,267 @@
+.adminContainer {
+  padding: 24px;
+  background: #fff;
+  min-height: calc(100vh - 64px);
+  border-radius: 12px;
+  box-shadow: 0 1px 20px rgba(0, 0, 0, 0.03);
+}
+
+.header {
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tableWrapper {
+  margin-top: 16px;
+  background: #fff;
+}
+
+/* Modal Styling */
+.modalHeader {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+.authorInfo h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.authorInfo p {
+  margin: 0;
+  color: #8c8c8c;
+}
+
+.postBody {
+  padding: 10px 0;
+}
+
+.mediaGrid {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.previewMedia {
+  max-width: 100%;
+  border-radius: 8px;
+  max-height: 400px;
+  object-fit: contain;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stats {
+  color: #595959;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .adminContainer {
+    padding: 12px;
+  }
+
+  .header h2 {
+    font-size: 20px;
+  }
+}
+/* Sử dụng các biến từ adminContainer truyền xuống */
+.textMain {
+  color: var(--text-main) !important;
+}
+.textSub {
+  color: var(--text-sub) !important;
+}
+
+.containerInner {
+  background: var(--sidebar-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+/* Tabs Styling */
+.customTabs :global(.ant-tabs-nav-list) {
+  gap: 20px;
+}
+.customTabs :global(.ant-tabs-tab-btn) {
+  color: var(--text-sub) !important;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.customTabs :global(.ant-tabs-tab-active .ant-tabs-tab-btn) {
+  color: var(--accent) !important;
+}
+.customTabs :global(.ant-tabs-ink-bar) {
+  background: var(--accent) !important;
+}
+
+/* Table Customization */
+.tableSection :global(.ant-table) {
+  background: transparent !important;
+  color: var(--text-main) !important;
+}
+
+.tableSection :global(.ant-table-thead > tr > th) {
+  background: var(--bg-main) !important;
+  color: var(--text-sub) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.tableSection :global(.ant-table-tbody > tr > td) {
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.tableSection :global(.ant-table-row:hover > td) {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* Buttons */
+.actionBtn,
+.approveBtn,
+.deleteBtn {
+  background: var(--bg-main) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-sub) !important;
+}
+
+.actionBtn:hover {
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+.approveBtn:hover {
+  color: #10b981 !important;
+  border-color: #10b981 !important;
+}
+.deleteBtn:hover {
+  color: #ef4444 !important;
+  border-color: #ef4444 !important;
+}
+
+.mainApproveBtn {
+  background: "navy" !important;
+  border: none !important;
+}
+
+/* Modal Styling */
+.detailModal :global(.ant-modal-content) {
+  background: "white" !important;
+  border: 1px solid var(--border) !important;
+  backdrop-filter: blur(10px);
+}
+
+.divider {
+  border-top: 1px solid var(--border) !important;
+}
+
+.authorRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mediaPreview {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mediaItem {
+  width: 100%;
+  border-radius: 12px;
+  max-height: 350px;
+  object-fit: contain;
+  background: #000;
+}
+
+.audioItem {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+  .containerInner {
+    padding: 16px;
+  }
+  .pageHeader {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+/* 🟢 Cố định màu cho cột hành động để không bị trắng xóa */
+.tableSection :global(.ant-table-cell-fix-right) {
+  background: var(--sidebar-bg) !important; /* Đảm bảo nền khớp với sidebar */
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* Tùy chỉnh các nút bấm Action */
+.actionBtn,
+.approveBtn,
+.deleteBtn {
+  background: var(--bg-main) !important;
+  border: 1px solid var(--border) !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease !important;
+}
+
+/* Màu icon mặc định ở chế độ tối nên là màu chữ phụ */
+.actionBtn span,
+.approveBtn span,
+.deleteBtn span {
+  color: var(--text-sub) !important;
+}
+
+/* Hiệu ứng Hover rực rỡ theo màu chức năng */
+.actionBtn:hover {
+  border-color: var(--accent) !important;
+}
+.actionBtn:hover span {
+  color: var(--accent) !important;
+}
+
+.approveBtn:hover {
+  border-color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.1) !important;
+}
+.approveBtn:hover span {
+  color: #10b981 !important;
+}
+
+.deleteBtn:hover {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+}
+.deleteBtn:hover span {
+  color: #ef4444 !important;
+}
+
+/* Fix lỗi chữ trong Table Header bị trắng */
+.tableSection :global(.ant-table-thead > tr > th) {
+  color: var(--text-sub) !important;
+  background: var(--bg-main) !important;
+  border-bottom: 1px solid var(--border) !important;
+}

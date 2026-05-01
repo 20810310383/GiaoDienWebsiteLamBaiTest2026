@@ -1,0 +1,233 @@
+.authContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at top right, #1e293b, #020617);
+  padding: 20px;
+}
+
+.authCard {
+  width: 100%;
+  max-width: 700px;
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 24px;
+  padding: 40px 30px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.titleArea {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.titleArea h2 {
+  color: #10b981;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  text-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+}
+
+.titleArea p {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+/* Custom lại Tabs của Antd */
+.customTabs :global(.ant-tabs-nav::before) {
+  display: none;
+}
+
+.customTabs :global(.ant-tabs-tab) {
+  padding: 12px 0;
+  margin: 0 20px !important;
+}
+
+.customTabs :global(.ant-tabs-tab-btn) {
+  color: #94a3b8 !important;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.customTabs :global(.ant-tabs-tab-active .ant-tabs-tab-btn) {
+  color: #10b981 !important;
+}
+
+.customTabs :global(.ant-tabs-ink-bar) {
+  background: #10b981 !important;
+  height: 3px !important;
+  border-radius: 3px;
+}
+
+/* Input Custom */
+.inputField :global(.ant-input-affix-wrapper) {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 12px 15px;
+  border-radius: 12px;
+}
+
+.inputField :global(.ant-input) {
+  background: transparent !important;
+  color: #f8fafc !important;
+}
+
+.inputField :global(.ant-input-prefix) {
+  color: #10b981;
+  margin-right: 10px;
+}
+
+.submitBtn {
+  height: 50px !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  border: none !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  margin-top: 10px;
+  box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2) !important;
+}
+
+.submitBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 25px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Responsive cho Mobile */
+@media (max-width: 576px) {
+  .authCard {
+    padding: 30px 20px;
+    border-radius: 0;
+    background: transparent;
+    border: none;
+    backdrop-filter: none;
+  }
+}
+/* Ép màu cho Placeholder trong Ant Design Input */
+.inputField :global(.ant-input::placeholder) {
+  color: rgba(255, 255, 255, 0.5) !important; /* Màu trắng mờ 50% */
+  font-weight: 400;
+}
+
+/* Cho các trình duyệt khác nhau */
+.inputField :global(.ant-input)::-webkit-input-placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.inputField :global(.ant-input)::-moz-placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Khi Input có lỗi (Validation fail) vẫn giữ placeholder dễ nhìn */
+.inputField :global(.ant-form-item-has-error .ant-input::placeholder) {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+/* Màu cho icon con mắt mặc định */
+.inputField :global(.ant-input-password-icon) {
+  color: rgba(255, 255, 255, 0.6) !important; /* Màu trắng mờ 60% */
+  transition: all 0.3s;
+}
+
+/* Hiệu ứng khi di chuột vào con mắt sẽ sáng rực lên */
+.inputField :global(.ant-input-password-icon:hover) {
+  color: #10b981 !important; /* Đổi sang xanh lá khi hover cho chất */
+}
+
+/* Đảm bảo phần bao quanh icon không bị đen */
+.inputField :global(.ant-input-suffix) {
+  color: #ffffff !important;
+}
+.otpSection {
+  text-align: center;
+}
+
+.backBtn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 20px;
+  transition: color 0.3s;
+}
+
+.backBtn:hover {
+  color: #10b981;
+}
+
+.otpHeader h3 {
+  color: #f8fafc;
+  font-size: 20px;
+  margin: 15px 0 5px;
+}
+
+.otpHeader p {
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.shieldWrapper {
+  width: 70px;
+  height: 70px;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  border: 1px dashed #10b981;
+}
+
+.shieldIcon {
+  color: #10b981;
+  filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.5));
+}
+
+.mainTimer {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 28px;
+  color: #10b981;
+  font-weight: bold;
+  margin: 15px 0;
+  letter-spacing: 2px;
+}
+
+.otpInput {
+  text-align: center !important;
+  font-size: 24px !important;
+  letter-spacing: 12px !important;
+  font-weight: 800 !important;
+  color: #10b981 !important;
+  height: 55px !important;
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 2px solid rgba(16, 185, 129, 0.2) !important;
+}
+
+.resendArea {
+  margin-top: 15px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.resendBtnActive {
+  color: #10b981 !important;
+  font-weight: 600 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin: 0 auto;
+}
+
+/* Sửa con mắt */
+.inputField :global(.ant-input-password-icon) {
+  color: #ffffff !important;
+}

@@ -1,0 +1,158 @@
+.badgeContainer {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.playBadge {
+  height: 38px;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.badgeContainer:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.1);
+}
+
+.badgeContainer:hover .playBadge {
+  transform: scale(1.02);
+}
+
+/* Modal Styling */
+.customModal :global(.ant-modal-content) {
+  background: #0f172a !important; /* Nền tối sâu */
+  border-radius: 28px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.customModal :global(.ant-modal-close) {
+  color: #64748b;
+  top: 16px;
+  right: 16px;
+}
+
+.modalBody {
+  padding: 40px 24px 30px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Icon Animation */
+.iconWrapper {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.mainIcon {
+  color: #10b981;
+  z-index: 2;
+}
+
+.pulseRing {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 2px solid #10b981;
+  border-radius: 22px;
+  animation: ripple 2s infinite;
+  opacity: 0;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.modalTitle {
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.modalSubTitle {
+  color: #94a3b8;
+  font-size: 14px;
+  margin-bottom: 30px;
+}
+
+.modalSubTitle b {
+  color: #10b981;
+}
+
+.progressContainer {
+  margin-bottom: 20px;
+}
+
+.timerNum {
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 800;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.waitingText {
+  color: #64748b;
+  font-size: 13px;
+  margin-bottom: 24px;
+}
+
+/* Action Button */
+.actionButton {
+  width: 100%;
+  height: 50px !important;
+  background: #10b981 !important;
+  border: none !important;
+  border-radius: 14px !important;
+  font-weight: 700 !important;
+  font-size: 15px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease !important;
+}
+
+.actionButton:hover {
+  background: #059669 !important;
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+}
+
+.cancelLink {
+  margin-top: 20px;
+  color: #475569 !important;
+  cursor: pointer;
+  font-size: 13px;
+  transition: color 0.2s;
+}
+
+.cancelLink:hover {
+  color: #94a3b8 !important;
+}
+
+/* Ant Design Progress Overrides */
+.customModal :global(.ant-progress-circle-trail) {
+  stroke: rgba(255, 255, 255, 0.04) !important;
+}
