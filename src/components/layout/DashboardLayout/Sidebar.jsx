@@ -125,7 +125,7 @@ const NAV_ITEMS = [
   {
     group: "Học tập",
     items: [
-      { to: "/mon-hoc", label: "Môn học", icon: <IconBook />, accent: "cyan" },
+      //   { to: "/mon-hoc", label: "Môn học", icon: <IconBook />, accent: "cyan" },
       { to: "/lop-hoc", label: "Lớp học", icon: <IconUsers />, accent: "pink" },
       {
         to: "/lich-su",

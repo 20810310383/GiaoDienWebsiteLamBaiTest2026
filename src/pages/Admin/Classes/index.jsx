@@ -232,7 +232,7 @@ const Classes = () => {
             <Search size={16} className={styles.searchIcon} />
             <input
               className={styles.searchInput}
-              placeholder="Tìm kiếm khóa học..."
+              placeholder="Tìm kiếm lớp học..."
               value={searchKey}
               onChange={(e) => setSearchKey(e.target.value)}
             />
