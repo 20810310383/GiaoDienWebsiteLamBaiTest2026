@@ -46,6 +46,8 @@ import {
   ChevronDown,
   ChevronUp,
   GripVertical,
+  EyeOff,
+  Eye as EyeIcon,
   Upload as UploadIcon,
   Video,
   Image,
@@ -100,6 +102,10 @@ const BaiGiang = () => {
   const [tempBaiGiangName, setTempBaiGiangName] = useState("");
   const [savingQuestions, setSavingQuestions] = useState(false);
   const [expandedQuestions, setExpandedQuestions] = useState({});
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewBaiGiang, setPreviewBaiGiang] = useState(null);
+  const [previewQuestions, setPreviewQuestions] = useState([]);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   // Editor ref
   const editorRef = useRef(null);
@@ -217,7 +223,7 @@ const BaiGiang = () => {
     try {
       // Gọi API lấy chi tiết bài giảng để có đầy đủ danhSachCauHoi
       const res = await getBaiGiangById(baiGiang._id, token);
-      const fullBaiGiang = res.baiGiang || res.data || res;
+      const fullBaiGiang = res.data || res;
 
       // Clone questions và thêm showGiaiThich cho mỗi câu hỏi
       const questionsWithState = (fullBaiGiang.danhSachCauHoi || []).map((q) => ({
@@ -315,10 +321,10 @@ const BaiGiang = () => {
     );
   };
 
-  // Cập nhật giải thích (dùng Editor)
-  const updateGiaiThichContent = (content) => {
+  // Cập nhật Lưu ý (dùng Editor)
+  const updateGiaiThichContent = (index, content) => {
     setTempQuestions((prev) =>
-      prev.map((q, i) => (i === activeQuestionIndex ? { ...q, giaiThich: content } : q))
+      prev.map((q, i) => (i === index ? { ...q, giaiThich: content } : q))
     );
   };
 
@@ -354,6 +360,9 @@ const BaiGiang = () => {
 
     setSavingQuestions(true);
     try {
+      // Log data trước khi gửi
+      console.log("Data sẽ gửi:", JSON.parse(JSON.stringify({ cauHois: tempQuestions })));
+
       // Xóa hết câu hỏi cũ (dùng originalQuestions thay vì baiGiangList)
       if (originalQuestions.length > 0) {
         for (const cauHoi of originalQuestions) {
@@ -380,6 +389,45 @@ const BaiGiang = () => {
   // Toggle expand question
   const toggleExpandQuestion = (index) => {
     setExpandedQuestions((prev) => ({ ...prev, [index]: !prev[index] }));
+  };
+
+  // Xem chi tiết câu hỏi
+  const openPreviewModal = async (baiGiang) => {
+    setPreviewBaiGiang(baiGiang);
+    setPreviewModalOpen(true);
+    setPreviewLoading(true);
+    setPreviewQuestions([]); // Reset trước
+    try {
+      const res = await getBaiGiangById(baiGiang._id, token);
+      
+      // Debug
+      console.log("Full response:", res);
+      console.log("res.data:", res.data);
+      console.log("res.data keys:", res.data ? Object.keys(res.data) : "N/A");
+      
+      const fullBaiGiang = res.data || res;
+      
+      if (!fullBaiGiang) {
+        message.error("Không lấy được dữ liệu bài giảng");
+        return;
+      }
+      
+      const questions = fullBaiGiang.danhSachCauHoi || [];
+      console.log("Questions:", questions);
+      console.log("First question:", questions[0]);
+      
+      setPreviewQuestions(questions);
+      
+      if (questions.length === 0) {
+        message.warning("Bài giảng này chưa có câu hỏi nào");
+      }
+    } catch (error) {
+      console.error("Lỗi preview:", error);
+      message.error("Không thể tải câu hỏi: " + (error.message || "Lỗi không xác định"));
+      setPreviewQuestions([]);
+    } finally {
+      setPreviewLoading(false);
+    }
   };
 
   // Upload handler cho TinyMCE
@@ -619,6 +667,14 @@ const BaiGiang = () => {
                   </button>
                 ) : (
                   <>
+                    <Tooltip title="Xem chi tiết câu hỏi">
+                      <button
+                        className={`${styles.iconBtn} ${styles.iconBtnPrimary}`}
+                        onClick={() => openPreviewModal(baiGiang)}
+                      >
+                        <EyeIcon size={15} />
+                      </button>
+                    </Tooltip>
                     <button
                       className={styles.editBtn}
                       onClick={() => openQuestionEditor(baiGiang)}
@@ -1090,7 +1146,7 @@ const BaiGiang = () => {
                       </div>
                     </div>
 
-                    {/* Giải thích với TinyMCE */}
+                    {/* Lưu ý với TinyMCE */}
                     <div className={styles.giaiThichSection}>
                       <button
                         className={styles.giaiThichToggle}
@@ -1101,23 +1157,21 @@ const BaiGiang = () => {
                         )}
                       >
                         <Lightbulb size={14} />
-                        {question.showGiaiThich ? "Ẩn giải thích" : "Thêm giải thích đáp án"}
+                        {question.showGiaiThich ? "Ẩn Lưu ý" : "Thêm Lưu ý"}
                       </button>
 
                       {question.showGiaiThich && (
                         <div className={styles.giaiThichBox}>
                           <label className={styles.editorLabel}>
                             <Lightbulb size={14} />
-                            Giải thích đáp án
+                            Lưu ý
                           </label>
                           <Editor
                             key={`giaithich-editor-${index}`}
                             apiKey={TINYMCE_API_KEY}
                             initialValue={question.giaiThich || ""}
-                            onChange={(content) => {
-                              if (index === activeQuestionIndex) {
-                                updateGiaiThichContent(content);
-                              }
+                            onEditorChange={(content) => {
+                              updateGiaiThichContent(index, content);
                             }}
                             init={{
                               height: 120,
@@ -1135,6 +1189,131 @@ const BaiGiang = () => {
                 )}
               </div>
             ))
+          )}
+        </div>
+      </Drawer>
+
+      {/* Drawer Xem Chi Tiết Câu Hỏi */}
+      <Drawer
+        open={previewModalOpen}
+        onClose={() => setPreviewModalOpen(false)}
+        width={600}
+        title={<span style={{ fontSize: '16px', fontWeight: 600 }}>Chi tiết câu hỏi</span>}
+        styles={{ body: { padding: 0 } }}
+      >
+        <div style={{ padding: '16px', height: 'calc(100vh - 110px)', overflowY: 'auto' }}>
+          {previewLoading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
+              <Spin size="large" />
+            </div>
+          ) : previewQuestions.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 20px', color: '#999' }}>
+              <FileText size={48} strokeWidth={1.5} />
+              <p style={{ marginTop: 16 }}>Chưa có câu hỏi nào</p>
+            </div>
+          ) : (
+            <div>
+              <div style={{ 
+                padding: '12px 16px', 
+                background: '#f5f5f5', 
+                borderRadius: 8, 
+                marginBottom: 20,
+                fontWeight: 500,
+                color: '#666'
+              }}>
+                📚 {previewBaiGiang?.ten_bai_giang}
+              </div>
+              {previewQuestions.map((q, index) => (
+                <div key={q._id || index} style={{ 
+                  marginBottom: 20, 
+                  border: '1px solid #e8e8e8', 
+                  borderRadius: 12,
+                  overflow: 'hidden'
+                }}>
+                  <div style={{ 
+                    padding: '10px 16px', 
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: '14px'
+                  }}>
+                    Câu {index + 1}
+                  </div>
+                  <div style={{ padding: 16 }}>
+                    <div 
+                      style={{ 
+                        marginBottom: 16,
+                        padding: 12,
+                        background: 'white',
+                        borderRadius: 8,
+                        border: '1px solid #e8e8e8'
+                      }}
+                      dangerouslySetInnerHTML={{ __html: q.noiDungCauHoi }} 
+                    />
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#666', marginBottom: 10, textTransform: 'uppercase' }}>
+                      Đáp án
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {(q.cacDapAn || []).map((answer, ansIndex) => (
+                        <div key={ansIndex} style={{ 
+                          display: 'flex', 
+                          alignItems: 'flex-start',
+                          gap: 10,
+                          padding: '10px 14px',
+                          background: answer.laDapAnDung ? '#f6ffed' : 'white',
+                          border: `1px solid ${answer.laDapAnDung ? '#52c41a' : '#e8e8e8'}`,
+                          borderRadius: 8
+                        }}>
+                          <span style={{ 
+                            flexShrink: 0,
+                            width: 24,
+                            height: 24,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: answer.laDapAnDung ? '#52c41a' : '#f0f0f0',
+                            color: answer.laDapAnDung ? 'white' : '#666',
+                            borderRadius: 6,
+                            fontWeight: 700,
+                            fontSize: '12px'
+                          }}>
+                            {String.fromCharCode(65 + ansIndex)}
+                          </span>
+                          <span dangerouslySetInnerHTML={{ __html: answer.noiDungDapAn }} style={{ flex: 1 }} />
+                          {answer.laDapAnDung && (
+                            <span style={{ 
+                              flexShrink: 0,
+                              padding: '2px 8px',
+                              background: '#52c41a',
+                              color: 'white',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              borderRadius: 12
+                            }}>
+                              ✓ Đúng
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {q.giaiThich && (
+                      <div style={{ 
+                        marginTop: 16,
+                        padding: 12,
+                        background: '#fffbe6',
+                        border: '1px solid #ffe58f',
+                        borderRadius: 8
+                      }}>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: '#fa8c16', marginBottom: 8 }}>
+                          💡 Lưu ý
+                        </div>
+                        <div dangerouslySetInnerHTML={{ __html: q.giaiThich }} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </Drawer>
