@@ -95,6 +95,7 @@ const BaiGiang = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
   const [tempQuestions, setTempQuestions] = useState([]);
+  const [originalQuestions, setOriginalQuestions] = useState([]); // Lưu câu hỏi gốc để xóa khi save
   const [tempBaiGiangId, setTempBaiGiangId] = useState(null);
   const [tempBaiGiangName, setTempBaiGiangName] = useState("");
   const [savingQuestions, setSavingQuestions] = useState(false);
@@ -225,6 +226,7 @@ const BaiGiang = () => {
       }));
 
       setTempQuestions(questionsWithState);
+      setOriginalQuestions(fullBaiGiang.danhSachCauHoi || []);
       setTempBaiGiangId(fullBaiGiang._id);
       setTempBaiGiangName(fullBaiGiang.ten_bai_giang);
       setActiveQuestionIndex(0);
@@ -307,9 +309,9 @@ const BaiGiang = () => {
   };
 
   // Cập nhật nội dung câu hỏi (dùng Editor)
-  const updateQuestionContent = (content) => {
+  const updateQuestionContent = (index, content) => {
     setTempQuestions((prev) =>
-      prev.map((q, i) => (i === activeQuestionIndex ? { ...q, noiDungCauHoi: content } : q))
+      prev.map((q, i) => (i === index ? { ...q, noiDungCauHoi: content } : q))
     );
   };
 
@@ -339,13 +341,10 @@ const BaiGiang = () => {
   // Validate và lưu câu hỏi
   const handleSaveQuestions = async () => {
     const hasEmpty = tempQuestions.some((q) => {
-      const content = typeof q.noiDungCauHoi === 'string' ? q.noiDungCauHoi.trim() : '';
-      return (
-        !content ||
-        content === "<p></p>" ||
-        q.cacDapAn.some((a) => typeof a.noiDungDapAn !== 'string' || !a.noiDungDapAn.trim()) ||
-        !q.cacDapAn.some((a) => a.laDapAnDung)
-      );
+      const content = q.noiDungCauHoi;
+      const hasContent = content && content.trim().length > 0 && content !== "<p></p>";
+      const hasCorrectAnswer = q.cacDapAn.some((a) => a.laDapAnDung);
+      return !hasContent || !hasCorrectAnswer;
     });
 
     if (hasEmpty) {
@@ -355,10 +354,9 @@ const BaiGiang = () => {
 
     setSavingQuestions(true);
     try {
-      // Xóa hết câu hỏi cũ
-      const currentBaiGiang = baiGiangList.find((bg) => bg._id === tempBaiGiangId);
-      if (currentBaiGiang?.danhSachCauHoi?.length > 0) {
-        for (const cauHoi of currentBaiGiang.danhSachCauHoi) {
+      // Xóa hết câu hỏi cũ (dùng originalQuestions thay vì baiGiangList)
+      if (originalQuestions.length > 0) {
+        for (const cauHoi of originalQuestions) {
           await xoaCauHoi(tempBaiGiangId, cauHoi._id, token);
         }
       }
@@ -370,6 +368,7 @@ const BaiGiang = () => {
 
       message.success("Lưu câu hỏi thành công!");
       setDrawerOpen(false);
+      setOriginalQuestions([]); // Clear sau khi lưu
       fetchBaiGiang();
     } catch (error) {
       message.error(error.message || "Lưu câu hỏi thất bại");
@@ -424,16 +423,12 @@ const BaiGiang = () => {
   const totalFree = baiGiangList.filter((bg) => bg.giaBaiGiang === 0).length;
   const totalPaid = baiGiangList.filter((bg) => bg.giaBaiGiang > 0).length;
 
-  // Kiểm tra câu hỏi hợp lệ
+  // Kiểm tra câu hỏi hợp lệ (chỉ check không rỗng)
   const isQuestionValid = (q) => {
-    const content = typeof q.noiDungCauHoi === 'string' ? q.noiDungCauHoi.trim() : '';
-    return (
-      content &&
-      content !== "<p></p>" &&
-      q.cacDapAn.length >= 2 &&
-      q.cacDapAn.some((a) => a.laDapAnDung) &&
-      q.cacDapAn.every((a) => typeof a.noiDungDapAn === 'string' && a.noiDungDapAn.trim())
-    );
+    const content = q.noiDungCauHoi;
+    const hasContent = content && content.trim().length > 0 && content !== "<p></p>";
+    const hasAnswers = q.cacDapAn.length >= 2 && q.cacDapAn.some((a) => a.laDapAnDung);
+    return hasContent && hasAnswers;
   };
 
   const activeQuestion = tempQuestions[activeQuestionIndex] || null;
@@ -803,7 +798,7 @@ const BaiGiang = () => {
                   input.click();
                 },
                 placeholder: "Nhập nội dung bài học...",
-                content_style: "body { font-family: 'Segoe UI', sans-serif; font-size: 14px; }",
+                content_style: "body { font-family: 'Segoe UI', sans-serif; font-size: 14px; direction: ltr; text-align: left; }",
               }}
             />
           </div>
@@ -858,7 +853,7 @@ const BaiGiang = () => {
       <Drawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        width={900}
+        width={1200}
         title={
           <div className={styles.drawerHeader}>
             <div className={styles.drawerHeaderIcon}>
@@ -971,16 +966,14 @@ const BaiGiang = () => {
                         key={`question-editor-${index}`}
                         apiKey={TINYMCE_API_KEY}
                         onInit={(evt, editor) => {
-                          if (index === activeQuestionIndex) questionEditorRef.current = editor;
+                          questionEditorRef.current = editor;
                         }}
                         initialValue={question.noiDungCauHoi || ""}
                         onChange={(content) => {
-                          if (index === activeQuestionIndex) {
-                            updateQuestionContent(content);
-                          }
+                          updateQuestionContent(index, content);
                         }}
                         init={{
-                          height: 180,
+                          height: 300,
                           menubar: false,
                           plugins: [
                             "advlist", "autolink", "lists", "link", "image",
@@ -1025,9 +1018,15 @@ const BaiGiang = () => {
                             };
                             input.click();
                           },
+                          init_instance_callback: (editor) => {
+                            editor.on('SetContent input change', () => {
+                              const content = editor.getContent();
+                              updateQuestionContent(index, content);
+                            });
+                          },
                           media_alt_source: true,
                           media_poster: false,
-                          content_style: "body { font-family: 'Segoe UI', sans-serif; font-size: 14px; }",
+                          content_style: "body { font-family: 'Segoe UI', sans-serif; font-size: 14px; direction: ltr; text-align: left; }",
                         }}
                       />
                     </div>
@@ -1126,7 +1125,7 @@ const BaiGiang = () => {
                               plugins: ["lists", "link", "wordcount", "image"],
                               toolbar: "bold italic | bullist numlist | image",
                               images_upload_handler: handleEditorUpload,
-                              content_style: "body { font-family: 'Segoe UI', sans-serif; font-size: 14px; }",
+                              content_style: "body { font-family: 'Segoe UI', sans-serif; font-size: 14px; direction: ltr; text-align: left; }",
                             }}
                           />
                         </div>
