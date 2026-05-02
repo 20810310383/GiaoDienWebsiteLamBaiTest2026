@@ -135,12 +135,20 @@ const BaiGiang = () => {
     }
   }, [token, classId]);
 
-  // Reset noiDungBaiHoc khi mở modal tạo mới (editingBaiGiang = null)
+  // Reset noiDungBaiHoc khi modal đóng hoàn toàn (dùng ref để track)
   useEffect(() => {
-    if (isModalOpen && !editingBaiGiang) {
+    if (!isModalOpen) {
       setNoiDungBaiHoc("");
     }
-  }, [isModalOpen, editingBaiGiang]);
+  }, [isModalOpen]);
+
+  // Sync noiDungBaiHoc khi editingBaiGiang thay đổi
+  useEffect(() => {
+    if (editingBaiGiang) {
+      const content = editingBaiGiang.noi_dung_bai_hoc || editingBaiGiang.noiDungBaiHoc || editingBaiGiang.content || "";
+      setNoiDungBaiHoc(content);
+    }
+  }, [editingBaiGiang?._id]);
 
   // Upload ảnh đại diện
   const handleUploadImage = async ({ file }) => {
@@ -195,14 +203,16 @@ const BaiGiang = () => {
 
   // Mở modal sửa
   const handleEdit = (baiGiang) => {
-    setEditingBaiGiang(baiGiang);
+    setEditingBaiGiang({ ...baiGiang });
     setImageUrl(baiGiang.anhDaiDien || "");
-    setNoiDungBaiHoc(baiGiang.noi_dung_bai_hoc || ""); // Lưu vào state riêng
+    const content = baiGiang.noi_dung_bai_hoc || baiGiang.noiDungBaiHoc || "";
+    setNoiDungBaiHoc(content);
     form.setFieldsValue({
       ten_bai_giang: baiGiang.ten_bai_giang,
       gioiThieu: baiGiang.gioiThieu,
       thoi_gian_lam_bai: baiGiang.thoi_gian_lam_bai,
       giaBaiGiang: baiGiang.giaBaiGiang,
+      noi_dung_bai_hoc: baiGiang.noi_dung_bai_hoc,
     });
     setIsModalOpen(true);
   };
@@ -465,6 +475,9 @@ const BaiGiang = () => {
       bg.ten_bai_giang?.toLowerCase().includes(searchKey.toLowerCase()) ||
       bg.maBaiGiang?.toLowerCase().includes(searchKey.toLowerCase())
   );
+
+  console.log("baiGiangList:", baiGiangList);
+  console.log("filteredBaiGiang:", filteredBaiGiang);
 
   // Thống kê
   const totalQuestions = baiGiangList.reduce((sum, bg) => sum + (bg.soCauHoi || 0), 0);
@@ -805,9 +818,15 @@ const BaiGiang = () => {
           <div className={styles.editorWrapper}>
             <label className={styles.formLabel}>Nội dung bài học</label>
             <Editor
+              key={`baigiang-editor-${editingBaiGiang?._id || 'new'}`}
               apiKey={TINYMCE_API_KEY}
-              onInit={(evt, editor) => (editorRef.current = editor)}
-              value={noiDungBaiHoc}
+              onInit={(evt, editor) => {
+                editorRef.current = editor;
+                // Delay nhẹ để đảm bảo editor ready
+                setTimeout(() => {
+                  editor.setContent(noiDungBaiHoc || "");
+                }, 50);
+              }}
               onEditorChange={(content) => setNoiDungBaiHoc(content)}
               init={{
                 height: 300,
@@ -1197,123 +1216,247 @@ const BaiGiang = () => {
       <Drawer
         open={previewModalOpen}
         onClose={() => setPreviewModalOpen(false)}
-        width={600}
-        title={<span style={{ fontSize: '16px', fontWeight: 600 }}>Chi tiết câu hỏi</span>}
-        styles={{ body: { padding: 0 } }}
+        width={920}
+        title={<span style={{ fontSize: '18px', fontWeight: 700, color: '#1a1a2e' }}>📖 Chi tiết bài giảng</span>}
+        styles={{ body: { padding: 0, background: '#f8f9fa' } }}
       >
-        <div style={{ padding: '16px', height: 'calc(100vh - 110px)', overflowY: 'auto' }}>
+        <div style={{ height: 'calc(100vh - 110px)', overflowY: 'auto' }}>
           {previewLoading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
               <Spin size="large" />
             </div>
-          ) : previewQuestions.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px 20px', color: '#999' }}>
-              <FileText size={48} strokeWidth={1.5} />
-              <p style={{ marginTop: 16 }}>Chưa có câu hỏi nào</p>
-            </div>
           ) : (
-            <div>
-              <div style={{ 
-                padding: '12px 16px', 
-                background: '#f5f5f5', 
-                borderRadius: 8, 
-                marginBottom: 20,
-                fontWeight: 500,
-                color: '#666'
+            <>
+              {/* Header với thông tin bài giảng */}
+              <div style={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                padding: '24px 28px',
+                color: 'white'
               }}>
-                📚 {previewBaiGiang?.ten_bai_giang}
+                <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, marginBottom: 8 }}>
+                  {previewBaiGiang?.ten_bai_giang}
+                </h2>
+                <div style={{ display: 'flex', gap: '20px', fontSize: '14px', opacity: 0.9 }}>
+                  <span>📋 {previewQuestions.length} câu hỏi</span>
+                  <span>⏱️ {previewBaiGiang?.thoi_gian_lam_bai || 0} phút</span>
+                </div>
               </div>
-              {previewQuestions.map((q, index) => (
-                <div key={q._id || index} style={{ 
-                  marginBottom: 20, 
-                  border: '1px solid #e8e8e8', 
-                  borderRadius: 12,
+
+              {/* Nội dung bài học */}
+              {previewBaiGiang?.noi_dung_bai_hoc ? (
+                <div style={{
+                  margin: '24px 28px',
+                  background: 'white',
+                  borderRadius: '16px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                   overflow: 'hidden'
                 }}>
-                  <div style={{ 
-                    padding: '10px 16px', 
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  <div style={{
+                    padding: '16px 24px',
+                    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
                     color: 'white',
-                    fontWeight: 600,
-                    fontSize: '14px'
+                    fontWeight: 700,
+                    fontSize: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
                   }}>
-                    Câu {index + 1}
+                    <span style={{ fontSize: '20px' }}>📚</span> Nội dung bài học
                   </div>
-                  <div style={{ padding: 16 }}>
-                    <div 
-                      style={{ 
-                        marginBottom: 16,
-                        padding: 12,
+                  <div style={{
+                    padding: '24px 28px',
+                    fontSize: '15px',
+                    lineHeight: 1.8,
+                    color: '#333',
+                    maxHeight: '400px',
+                    overflowY: 'auto'
+                  }}>
+                    <div dangerouslySetInnerHTML={{ __html: previewBaiGiang.noi_dung_bai_hoc }} />
+                  </div>
+                </div>
+              ) : (
+                <div style={{
+                  margin: '24px 28px',
+                  padding: '40px',
+                  background: 'white',
+                  borderRadius: '16px',
+                  textAlign: 'center',
+                  color: '#999',
+                  border: '2px dashed #e8e8e8'
+                }}>
+                  <FileText size={48} strokeWidth={1.5} style={{ marginBottom: '12px', opacity: 0.5 }} />
+                  <p style={{ margin: 0 }}>Chưa có nội dung bài học</p>
+                </div>
+              )}
+
+              {/* Danh sách câu hỏi */}
+              <div style={{ padding: '0 28px 28px' }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '20px',
+                  padding: '16px 20px',
+                  background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+                  borderRadius: '12px',
+                  color: 'white'
+                }}>
+                  <span style={{ fontSize: '24px' }}>❓</span>
+                  <span style={{ fontSize: '16px', fontWeight: 700 }}>Danh sách câu hỏi ({previewQuestions.length})</span>
+                </div>
+
+                {previewQuestions.length === 0 ? (
+                  <div style={{
+                    padding: '60px',
+                    background: 'white',
+                    borderRadius: '16px',
+                    textAlign: 'center',
+                    color: '#999'
+                  }}>
+                    <FileText size={48} strokeWidth={1.5} />
+                    <p style={{ marginTop: 16 }}>Chưa có câu hỏi nào</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    {previewQuestions.map((q, index) => (
+                      <div key={q._id || index} style={{
                         background: 'white',
-                        borderRadius: 8,
-                        border: '1px solid #e8e8e8'
-                      }}
-                      dangerouslySetInnerHTML={{ __html: q.noiDungCauHoi }} 
-                    />
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#666', marginBottom: 10, textTransform: 'uppercase' }}>
-                      Đáp án
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {(q.cacDapAn || []).map((answer, ansIndex) => (
-                        <div key={ansIndex} style={{ 
-                          display: 'flex', 
-                          alignItems: 'flex-start',
-                          gap: 10,
-                          padding: '10px 14px',
-                          background: answer.laDapAnDung ? '#f6ffed' : 'white',
-                          border: `1px solid ${answer.laDapAnDung ? '#52c41a' : '#e8e8e8'}`,
-                          borderRadius: 8
+                        borderRadius: '16px',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+                        overflow: 'hidden'
+                      }}>
+                        {/* Header câu hỏi */}
+                        <div style={{
+                          padding: '14px 20px',
+                          background: index % 2 === 0 
+                            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                            : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                          color: 'white',
+                          fontWeight: 700,
+                          fontSize: '14px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px'
                         }}>
-                          <span style={{ 
-                            flexShrink: 0,
-                            width: 24,
-                            height: 24,
+                          <span style={{
+                            width: '28px',
+                            height: '28px',
+                            background: 'rgba(255,255,255,0.2)',
+                            borderRadius: '50%',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            background: answer.laDapAnDung ? '#52c41a' : '#f0f0f0',
-                            color: answer.laDapAnDung ? 'white' : '#666',
-                            borderRadius: 6,
-                            fontWeight: 700,
-                            fontSize: '12px'
+                            fontSize: '13px'
                           }}>
-                            {String.fromCharCode(65 + ansIndex)}
+                            {index + 1}
                           </span>
-                          <span dangerouslySetInnerHTML={{ __html: answer.noiDungDapAn }} style={{ flex: 1 }} />
-                          {answer.laDapAnDung && (
-                            <span style={{ 
-                              flexShrink: 0,
-                              padding: '2px 8px',
-                              background: '#52c41a',
-                              color: 'white',
-                              fontSize: '11px',
-                              fontWeight: 600,
-                              borderRadius: 12
+                          Câu hỏi số {index + 1}
+                        </div>
+
+                        {/* Nội dung câu hỏi */}
+                        <div style={{ padding: '20px 24px' }}>
+                          <div dangerouslySetInnerHTML={{ __html: q.noiDungCauHoi }} style={{
+                            padding: '16px 20px',
+                            background: '#f8f9fa',
+                            borderRadius: '12px',
+                            marginBottom: '20px',
+                            fontSize: '15px',
+                            lineHeight: 1.7,
+                            border: '1px solid #e8e8e8'
+                          }} />
+
+                          {/* Đáp án */}
+                          <div style={{ fontSize: '13px', fontWeight: 700, color: '#666', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            📝 Đáp án
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {(q.cacDapAn || []).map((answer, ansIndex) => (
+                              <div key={ansIndex} style={{
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: '14px',
+                                padding: '14px 18px',
+                                background: answer.laDapAnDung ? 'linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%)' : '#fafafa',
+                                border: `2px solid ${answer.laDapAnDung ? '#52c41a' : '#e8e8e8'}`,
+                                borderRadius: '12px',
+                                transition: 'all 0.2s'
+                              }}>
+                                <span style={{
+                                  flexShrink: 0,
+                                  width: '32px',
+                                  height: '32px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  background: answer.laDapAnDung 
+                                    ? 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)'
+                                    : 'linear-gradient(135deg, #e8e8e8 0%, #d9d9d9 100%)',
+                                  color: answer.laDapAnDung ? 'white' : '#666',
+                                  borderRadius: '8px',
+                                  fontWeight: 800,
+                                  fontSize: '14px',
+                                  boxShadow: answer.laDapAnDung ? '0 2px 8px rgba(82,196,26,0.3)' : 'none'
+                                }}>
+                                  {String.fromCharCode(65 + ansIndex)}
+                                </span>
+                                <span dangerouslySetInnerHTML={{ __html: answer.noiDungDapAn }} style={{
+                                  flex: 1,
+                                  fontSize: '14px',
+                                  lineHeight: 1.6,
+                                  color: answer.laDapAnDung ? '#389e0d' : '#333'
+                                }} />
+                                {answer.laDapAnDung && (
+                                  <span style={{
+                                    flexShrink: 0,
+                                    padding: '4px 12px',
+                                    background: 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)',
+                                    color: 'white',
+                                    fontSize: '12px',
+                                    fontWeight: 700,
+                                    borderRadius: '20px',
+                                    boxShadow: '0 2px 8px rgba(82,196,26,0.3)'
+                                  }}>
+                                    ✓ Đáp án đúng
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Lưu ý / Giải thích */}
+                          {q.giaiThich && (
+                            <div style={{
+                              marginTop: '20px',
+                              padding: '16px 20px',
+                              background: 'linear-gradient(135deg, #fffbe6 0%, #ffe58f 100%)',
+                              border: '2px solid #ffc53d',
+                              borderRadius: '12px'
                             }}>
-                              ✓ Đúng
-                            </span>
+                              <div style={{
+                                fontSize: '14px',
+                                fontWeight: 700,
+                                color: '#d48806',
+                                marginBottom: '10px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                              }}>
+                                <span style={{ fontSize: '18px' }}>💡</span> Lưu ý / Giải thích
+                              </div>
+                              <div dangerouslySetInnerHTML={{ __html: q.giaiThich }} style={{
+                                fontSize: '14px',
+                                lineHeight: 1.7,
+                                color: '#8b572a'
+                              }} />
+                            </div>
                           )}
                         </div>
-                      ))}
-                    </div>
-                    {q.giaiThich && (
-                      <div style={{ 
-                        marginTop: 16,
-                        padding: 12,
-                        background: '#fffbe6',
-                        border: '1px solid #ffe58f',
-                        borderRadius: 8
-                      }}>
-                        <div style={{ fontSize: '13px', fontWeight: 600, color: '#fa8c16', marginBottom: 8 }}>
-                          💡 Lưu ý
-                        </div>
-                        <div dangerouslySetInnerHTML={{ __html: q.giaiThich }} />
                       </div>
-                    )}
+                    ))}
                   </div>
-                </div>
-              ))}
-            </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </Drawer>
