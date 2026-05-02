@@ -72,6 +72,7 @@ const Classes = () => {
   const [searchKey, setSearchKey] = useState("");
   const [form] = Form.useForm();
   const [joinForm] = Form.useForm();
+  const [drawerSearch, setDrawerSearch] = useState("");
 
   const isManagement = user?.role === "admin" || user?.role === "giaovien";
 
@@ -517,7 +518,10 @@ const Classes = () => {
           </div>
         }
         open={studentListVisible}
-        onClose={() => setStudentListVisible(false)}
+        onClose={() => {
+          setStudentListVisible(false);
+          setDrawerSearch("");
+        }}
         width={window.innerWidth > 768 ? 460 : "100%"}
         className={styles.customDrawer}
       >
@@ -530,83 +534,109 @@ const Classes = () => {
           </span>
         </div>
 
+        {/* Search */}
+        <div className={styles.drawerSearchBox}>
+          <Search size={14} className={styles.drawerSearchIcon} />
+          <input
+            className={styles.drawerSearchInput}
+            placeholder="Tìm theo tên hoặc mã số..."
+            value={drawerSearch}
+            onChange={(e) => setDrawerSearch(e.target.value)}
+          />
+          {drawerSearch && (
+            <button
+              className={styles.drawerSearchClear}
+              onClick={() => setDrawerSearch("")}
+            >
+              ×
+            </button>
+          )}
+        </div>
+
         <div className={styles.studentList}>
-          {selectedClass?.danh_sach_hoc_vien?.map((sv, idx) => (
-            <div key={idx} className={styles.studentItem}>
-              <Avatar
-                size={42}
-                src={getPublicUrl(sv.id_hoc_vien?.anh_dai_dien)}
-                className={styles.studentAvatar}
-              >
-                {sv.id_hoc_vien?.ho_ten?.[0]}
-              </Avatar>
-              <div className={styles.studentInfo}>
-                <div className={styles.studentName}>
-                  {sv.id_hoc_vien?.ho_ten}
-                </div>
-                <div className={styles.studentMaso}>
-                  {sv.id_hoc_vien?.ma_so}
-                </div>
-              </div>
+          {(() => {
+            const filtered =
+              selectedClass?.danh_sach_hoc_vien?.filter((sv) => {
+                const name = sv.id_hoc_vien?.ho_ten?.toLowerCase() || "";
+                const maso = sv.id_hoc_vien?.ma_so?.toLowerCase() || "";
+                const q = drawerSearch.toLowerCase();
+                return name.includes(q) || maso.includes(q);
+              }) || [];
 
-              {/* LOGIC NÚT PHÊ DUYỆT */}
-              <div className={styles.studentActions}>
-                {sv.trang_thai_phe_duyet === "cho_phe_duyet" ? (
-                  <Space size={8}>
-                    <Tooltip title="Duyệt vào lớp">
-                      <Button
-                        type="primary"
-                        shape="circle"
-                        icon={<CheckCircle size={16} />}
-                        className={styles.btnApprove}
-                        onClick={() =>
-                          handleApprove(sv.id_hoc_vien?._id, "da_tham_gia")
-                        }
-                      />
-                    </Tooltip>
-                    {/* <Popconfirm
-                      title="Từ chối học viên này?"
-                      onConfirm={() =>
-                        handleApprove(sv.id_hoc_vien?._id, "bi_tu_choi")
-                      }
-                      okText="Đúng"
-                      cancelText="Không"
+            if (filtered.length === 0)
+              return (
+                <div className={styles.drawerEmpty}>
+                  <Users size={32} />
+                  <p>
+                    {drawerSearch
+                      ? "Không tìm thấy học viên"
+                      : "Chưa có học viên nào"}
+                  </p>
+                </div>
+              );
+
+            return filtered.map((sv, idx) => (
+              <div key={idx} className={styles.studentItem}>
+                <Avatar
+                  size={42}
+                  src={getPublicUrl(sv.id_hoc_vien?.anh_dai_dien)}
+                  className={styles.studentAvatar}
+                >
+                  {sv.id_hoc_vien?.ho_ten?.[0]}
+                </Avatar>
+                <div className={styles.studentInfo}>
+                  <div className={styles.studentName}>
+                    {sv.id_hoc_vien?.ho_ten}
+                  </div>
+                  <div className={styles.studentMaso}>
+                    {sv.id_hoc_vien?.ma_so}
+                  </div>
+                </div>
+
+                {/* LOGIC NÚT PHÊ DUYỆT */}
+                <div className={styles.studentActions}>
+                  {sv.trang_thai_phe_duyet === "cho_phe_duyet" ? (
+                    <Space size={8}>
+                      <Tooltip title="Duyệt vào lớp">
+                        <Button
+                          type="primary"
+                          shape="circle"
+                          icon={<CheckCircle size={16} />}
+                          className={styles.btnApprove}
+                          onClick={() =>
+                            handleApprove(sv.id_hoc_vien?._id, "da_tham_gia")
+                          }
+                        />
+                      </Tooltip>
+                      <span
+                        className={`${styles.approvalBadge} ${
+                          sv.trang_thai_phe_duyet === "da_tham_gia"
+                            ? styles.badgeApproved
+                            : styles.badgeRejected
+                        }`}
+                      >
+                        {sv.trang_thai_phe_duyet === "da_tham_gia"
+                          ? "Đã duyệt"
+                          : "Chờ duyệt"}
+                      </span>
+                    </Space>
+                  ) : (
+                    <span
+                      className={`${styles.approvalBadge} ${
+                        sv.trang_thai_phe_duyet === "da_tham_gia"
+                          ? styles.badgeApproved
+                          : styles.badgeRejected
+                      }`}
                     >
-                      <Button
-                        danger
-                        shape="circle"
-                        icon={<XCircle size={16} />}
-                      />
-                    </Popconfirm> */}
-                  </Space>
-                ) : (
-                  <span
-                    className={`${styles.approvalBadge} ${
-                      sv.trang_thai_phe_duyet === "da_tham_gia"
-                        ? styles.badgeApproved
-                        : styles.badgeRejected
-                    }`}
-                  >
-                    {sv.trang_thai_phe_duyet === "da_tham_gia"
-                      ? "Đã duyệt"
-                      : "Bị từ chối"}
-                  </span>
-                )}
+                      {sv.trang_thai_phe_duyet === "da_tham_gia"
+                        ? "Đã duyệt"
+                        : "Bị từ chối"}
+                    </span>
+                  )}
+                </div>
               </div>
-
-              <span
-                className={`${styles.approvalBadge} ${
-                  sv.trang_thai_phe_duyet === "da_tham_gia"
-                    ? styles.badgeApproved
-                    : styles.badgePending
-                }`}
-              >
-                {sv.trang_thai_phe_duyet === "da_tham_gia"
-                  ? "Đã duyệt"
-                  : "Chờ duyệt"}
-              </span>
-            </div>
-          ))}
+            ));
+          })()}
         </div>
       </Drawer>
 
