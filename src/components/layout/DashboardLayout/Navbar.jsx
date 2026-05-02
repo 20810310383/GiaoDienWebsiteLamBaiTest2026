@@ -84,9 +84,9 @@ const IconSun = () => (
 /* ── Breadcrumb map ── */
 const ROUTE_LABELS = {
   "/": "Trang chủ",
-  "/mon-hoc": "Môn học",
   "/lop-hoc": "Lớp học",
   "/lich-su": "Lịch sử làm bài",
+  "/lop-hoc/bai-giang/:classId/:className": "Bài giảng",
   "/403": "Quyền truy cập",
   "/tai-khoan-cua-toi": "Tài khoản của tôi",
 };

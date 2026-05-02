@@ -48,7 +48,7 @@ import {
   approveStudent,
 } from "../../../services/apiLopHoc";
 import { uploadAPI } from "../../../services/uploadAPI";
-import { getPublicUrl } from "../../../utils/formatURL";
+import { getPublicUrl, slugify } from "../../../utils/formatURL";
 
 const COVER_FALLBACKS = [
   "https://images.unsplash.com/photo-1501504905953-f8313670f83e?w=600&auto=format&fit=crop",
@@ -135,6 +135,7 @@ const Classes = () => {
       setIsJoinModalOpen(false);
       setJoiningClass(null);
       joinForm.resetFields();
+      await fetchClasses();
     } catch (error) {
       message.error(error.message || "Mã lớp không hợp lệ");
     }
@@ -162,7 +163,6 @@ const Classes = () => {
     }, 0);
   };
 
-  console.log("Classes:", classes);
 
   const filteredClasses = classes.filter((c) =>
     c.ten_lop?.toLowerCase().includes(searchKey.toLowerCase()),
@@ -176,8 +176,6 @@ const Classes = () => {
   // Hàm xử lý phê duyệt hoặc từ chối học viên
   const handleApprove = async (studentId, status) => {
     try {
-      console.log("selectedClass: ", selectedClass);
-
       const payload = {
         classId: selectedClass._id,
         studentId: studentId,
@@ -205,6 +203,13 @@ const Classes = () => {
     } catch (error) {
       message.error(error.message || "Lỗi khi phê duyệt học viên");
     }
+  };
+
+  const xemTrangBaiGiang = (lop) => {
+    const id = lop.maKey;
+    const tenLop = lop.ten_lop;
+
+    navigate(`/lop-hoc/bai-giang/${id}/${slugify(tenLop)}`);
   };
 
   return (
@@ -392,7 +397,14 @@ const Classes = () => {
 
                 {/* Body */}
                 <div className={styles.cardBody}>
-                  <h3 className={styles.cardTitle}>{item.ten_lop}</h3>
+                  <h3
+                    className={isManagement ? styles.cardTitle : styles.cardTitleDisabled}
+                    onClick={() => isManagement && xemTrangBaiGiang(item)}
+                    style={{ cursor: isManagement ? "pointer" : "default" }}
+                    title={isManagement ? "Xem bài giảng của lớp" : "Bạn cần tham gia lớp trước"}
+                  >
+                    {item.ten_lop}
+                  </h3>
 
                   <div className={styles.teacherRow}>
                     <Avatar
@@ -479,7 +491,7 @@ const Classes = () => {
                   ) : isJoined ? (
                     <button
                       className={styles.enterBtn}
-                      onClick={() => navigate(`/classes/${item._id}`)}
+                      onClick={() => xemTrangBaiGiang(item)}
                     >
                       <BookOpen size={15} />
                       Vào học ngay
