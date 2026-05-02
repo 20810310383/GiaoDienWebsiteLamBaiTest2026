@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Button,
   Modal,
@@ -33,6 +34,8 @@ import {
   GraduationCap,
   Layers,
   TrendingUp,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import styles from "./Classes.module.css";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -42,6 +45,7 @@ import {
   updateLopHoc,
   deleteLopHoc,
   joinClassByCode,
+  approveStudent,
 } from "../../../services/apiLopHoc";
 import { uploadAPI } from "../../../services/uploadAPI";
 import { getPublicUrl } from "../../../utils/formatURL";
@@ -54,10 +58,12 @@ const COVER_FALLBACKS = [
 
 const Classes = () => {
   const { token, user } = useAuth();
+  const navigate = useNavigate();
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const [joiningClass, setJoiningClass] = useState(null);
   const [studentListVisible, setStudentListVisible] = useState(false);
   const [selectedClass, setSelectedClass] = useState(null);
   const [editingClass, setEditingClass] = useState(null);
@@ -126,6 +132,7 @@ const Classes = () => {
       await joinClassByCode(values, token);
       message.success("Đã gửi yêu cầu tham gia! Chờ giáo viên phê duyệt.");
       setIsJoinModalOpen(false);
+      setJoiningClass(null);
       joinForm.resetFields();
     } catch (error) {
       message.error(error.message || "Mã lớp không hợp lệ");
@@ -142,7 +149,6 @@ const Classes = () => {
   const openEdit = (item) => {
     setEditingClass(item);
     setImageUrl(item.anh_lop || "");
-    // form.setFieldsValue(item);
     setIsModalOpen(true);
     // Đợi Modal mount xong mới set values, tránh bị clear
     setTimeout(() => {
@@ -155,6 +161,8 @@ const Classes = () => {
     }, 0);
   };
 
+  console.log("Classes:", classes);
+
   const filteredClasses = classes.filter((c) =>
     c.ten_lop?.toLowerCase().includes(searchKey.toLowerCase()),
   );
@@ -163,6 +171,40 @@ const Classes = () => {
     (acc, c) => acc + (c.danh_sach_hoc_vien?.length || 0),
     0,
   );
+
+  // Hàm xử lý phê duyệt hoặc từ chối học viên
+  const handleApprove = async (studentId, status) => {
+    try {
+      console.log("selectedClass: ", selectedClass);
+
+      const payload = {
+        classId: selectedClass._id,
+        studentId: studentId,
+        status: status, // 'da_tham_gia' hoặc 'bi_tu_choi'
+      };
+
+      const res = await approveStudent(payload, token);
+      message.success(res.message || "Thao tác thành công! ✨");
+
+      // Cập nhật lại state selectedClass để giao diện Drawer thay đổi ngay
+      const updatedMembers = selectedClass.danh_sach_hoc_vien.map((item) => {
+        if (item.id_hoc_vien?._id === studentId) {
+          return { ...item, trang_thai_phe_duyet: status };
+        }
+        return item;
+      });
+
+      setSelectedClass({
+        ...selectedClass,
+        danh_sach_hoc_vien: updatedMembers,
+      });
+
+      // Gọi lại danh sách tổng để các con số ở card bên ngoài cập nhật theo
+      fetchClasses();
+    } catch (error) {
+      message.error(error.message || "Lỗi khi phê duyệt học viên");
+    }
+  };
 
   return (
     <div className={styles.page}>
@@ -294,7 +336,14 @@ const Classes = () => {
       ) : (
         <div className={styles.grid}>
           {filteredClasses.map((item, idx) => {
-            const studentCount = item.danh_sach_hoc_vien?.length || 0;
+            const studentCount =
+              item.danh_sach_hoc_vien?.filter(
+                (sv) => sv.trang_thai_phe_duyet === "da_tham_gia",
+              ).length || 0;
+            const pendingCount =
+              item.danh_sach_hoc_vien?.filter(
+                (sv) => sv.trang_thai_phe_duyet === "cho_phe_duyet",
+              ).length || 0;
             const maxStudents = item.si_so_toi_da || 30;
             const fillPct = Math.min(
               100,
@@ -304,6 +353,16 @@ const Classes = () => {
             const cover =
               getPublicUrl(item.anh_lop) ||
               COVER_FALLBACKS[idx % COVER_FALLBACKS.length];
+
+            // Kiểm tra học sinh đã được duyệt vào lớp chưa
+            const myRecord = item.danh_sach_hoc_vien?.find(
+              (sv) =>
+                sv.id_hoc_vien?._id === user?._id ||
+                sv.id_hoc_vien === user?._id,
+            );
+            const isJoined = myRecord?.trang_thai_phe_duyet === "da_tham_gia";
+            const isPending =
+              myRecord?.trang_thai_phe_duyet === "cho_phe_duyet";
 
             return (
               <div
@@ -366,6 +425,12 @@ const Classes = () => {
                         style={{ width: `${fillPct}%` }}
                       />
                     </div>
+                    {isManagement && pendingCount > 0 && (
+                      <div className={styles.pendingNotice}>
+                        <RefreshCw size={11} />
+                        <span>{pendingCount} đang chờ phê duyệt</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -410,11 +475,27 @@ const Classes = () => {
                         </Tooltip>
                       </Popconfirm>
                     </div>
+                  ) : isJoined ? (
+                    <button
+                      className={styles.enterBtn}
+                      onClick={() => navigate(`/classes/${item._id}`)}
+                    >
+                      <BookOpen size={15} />
+                      Vào học ngay
+                    </button>
+                  ) : isPending ? (
+                    <button className={styles.pendingBtn} disabled>
+                      <RefreshCw size={14} />
+                      Đang chờ duyệt
+                    </button>
                   ) : (
                     <button
                       className={styles.joinBtn}
                       disabled={isFull}
-                      onClick={() => message.info("Chức năng đang cập nhật!")}
+                      onClick={() => {
+                        setJoiningClass(item);
+                        setIsJoinModalOpen(true);
+                      }}
                     >
                       {isFull ? "Đã đầy chỗ" : "Tham gia ngay"}
                       {!isFull && <ChevronRight size={15} />}
@@ -467,6 +548,52 @@ const Classes = () => {
                   {sv.id_hoc_vien?.ma_so}
                 </div>
               </div>
+
+              {/* LOGIC NÚT PHÊ DUYỆT */}
+              <div className={styles.studentActions}>
+                {sv.trang_thai_phe_duyet === "cho_phe_duyet" ? (
+                  <Space size={8}>
+                    <Tooltip title="Duyệt vào lớp">
+                      <Button
+                        type="primary"
+                        shape="circle"
+                        icon={<CheckCircle size={16} />}
+                        className={styles.btnApprove}
+                        onClick={() =>
+                          handleApprove(sv.id_hoc_vien?._id, "da_tham_gia")
+                        }
+                      />
+                    </Tooltip>
+                    {/* <Popconfirm
+                      title="Từ chối học viên này?"
+                      onConfirm={() =>
+                        handleApprove(sv.id_hoc_vien?._id, "bi_tu_choi")
+                      }
+                      okText="Đúng"
+                      cancelText="Không"
+                    >
+                      <Button
+                        danger
+                        shape="circle"
+                        icon={<XCircle size={16} />}
+                      />
+                    </Popconfirm> */}
+                  </Space>
+                ) : (
+                  <span
+                    className={`${styles.approvalBadge} ${
+                      sv.trang_thai_phe_duyet === "da_tham_gia"
+                        ? styles.badgeApproved
+                        : styles.badgeRejected
+                    }`}
+                  >
+                    {sv.trang_thai_phe_duyet === "da_tham_gia"
+                      ? "Đã duyệt"
+                      : "Bị từ chối"}
+                  </span>
+                )}
+              </div>
+
               <span
                 className={`${styles.approvalBadge} ${
                   sv.trang_thai_phe_duyet === "da_tham_gia"
@@ -485,6 +612,7 @@ const Classes = () => {
 
       {/* ─── MODAL: TẠO / SỬA LỚP ────────────── */}
       <Modal
+        maskClosable={false}
         title={
           <div className={styles.modalTitleRow}>
             <div className={styles.modalTitleIcon}>
@@ -501,7 +629,6 @@ const Classes = () => {
         width={620}
         centered
         className={styles.customModal}
-        maskClosable={false}
       >
         <Form
           form={form}
@@ -610,13 +737,30 @@ const Classes = () => {
           </div>
         }
         open={isJoinModalOpen}
-        onCancel={() => setIsJoinModalOpen(false)}
+        onCancel={() => {
+          setIsJoinModalOpen(false);
+          setJoiningClass(null);
+          joinForm.resetFields();
+        }}
         footer={null}
         centered
         width={400}
         className={styles.customModal}
       >
         <Form form={joinForm} layout="vertical" onFinish={handleJoinClass}>
+          {joiningClass && (
+            <div className={styles.joiningClassInfo}>
+              <div className={styles.joiningClassLabel}>Lớp muốn tham gia</div>
+              <div className={styles.joiningClassName}>
+                {joiningClass.ten_lop}
+              </div>
+              {joiningClass.id_giaovien?.ho_ten && (
+                <div className={styles.joiningTeacher}>
+                  GV: {joiningClass.id_giaovien.ho_ten}
+                </div>
+              )}
+            </div>
+          )}
           <p className={styles.joinModalDesc}>
             Nhập mã 6 ký tự do giáo viên cung cấp để gửi yêu cầu tham gia lớp.
           </p>

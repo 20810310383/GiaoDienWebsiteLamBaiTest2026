@@ -560,6 +560,46 @@
   color: #ef4444 !important;
 }
 
+.enterBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  padding: 0.6rem;
+  background: rgba(15, 110, 86, 0.08);
+  color: var(--accent-pink);
+  border: 1.5px solid rgba(15, 110, 86, 0.25);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.enterBtn:hover {
+  background: rgba(15, 110, 86, 0.15);
+  border-color: var(--accent-pink);
+  transform: translateY(-1px);
+}
+
+.pendingBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  padding: 0.6rem;
+  background: rgba(180, 83, 9, 0.06);
+  color: var(--accent-amber);
+  border: 1.5px solid rgba(180, 83, 9, 0.2);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
 .joinBtn {
   display: flex;
   align-items: center;
@@ -859,6 +899,37 @@
   box-shadow: 0 8px 24px rgba(24, 95, 165, 0.35);
 }
 
+/* Joining class info block */
+.joiningClassInfo {
+  background: rgba(24, 95, 165, 0.06);
+  border: 1.5px solid var(--border-med);
+  border-radius: 12px;
+  padding: 0.875rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.joiningClassLabel {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-violet);
+  margin-bottom: 0.3rem;
+}
+
+.joiningClassName {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.joiningTeacher {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-top: 0.2rem;
+}
+
 /* Join modal desc */
 .joinModalDesc {
   font-size: 0.85rem;
@@ -930,4 +1001,63 @@
   .headerTitle {
     font-size: 1.6rem;
   }
+}
+.studentItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  border: 1px solid #f1f5f9;
+  transition: 0.3s;
+}
+
+.studentActions {
+  margin-left: auto;
+}
+
+.btnApprove {
+  background: var(--accent-emerald) !important;
+  border: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.approvalBadge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.badgeApproved {
+  background: #e1fcf0;
+  color: #0f6e56;
+}
+
+.badgePending {
+  background: #fff4e5;
+  color: #b45309;
+}
+
+.badgeRejected {
+  background: #fef2f2;
+  color: #ef4444;
+}
+.pendingNotice {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent-amber);
+  background: rgba(180, 83, 9, 0.08);
+  border: 1px solid rgba(180, 83, 9, 0.18);
+  padding: 2px 8px;
+  border-radius: 100px;
 }
