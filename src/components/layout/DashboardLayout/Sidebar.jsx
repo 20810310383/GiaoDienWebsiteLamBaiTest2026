@@ -135,9 +135,16 @@ const NAV_ITEMS = [
       },
     ],
   },
+
   {
     group: "Hệ thống",
     items: [
+      {
+        to: "/tai-khoan-cua-toi",
+        label: "Thông tin tài khoản",
+        icon: <IconUsers />,
+        accent: "blue",
+      },
       {
         to: "/403",
         label: "Quyền truy cập",

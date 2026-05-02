@@ -122,6 +122,8 @@ export const AuthProvider = ({ children }) => {
   const handleLogout = async () => {
     try {
       if (token) await logoutUser(token);
+      // ✅ XÓA SẠCH Ở LOCALSTORAGE
+      localStorage.removeItem("token");
       sessionStorage.removeItem("token");
     } catch (err) {
       console.warn("⚠️ Lỗi logout:", err.message);

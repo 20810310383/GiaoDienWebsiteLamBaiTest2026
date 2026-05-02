@@ -88,6 +88,7 @@ const ROUTE_LABELS = {
   "/lop-hoc": "Lớp học",
   "/lich-su": "Lịch sử làm bài",
   "/403": "Quyền truy cập",
+  "/tai-khoan-cua-toi": "Tài khoản của tôi",
 };
 
 const Navbar = ({ onToggleSidebar, sidebarOpen }) => {
@@ -182,9 +183,9 @@ const Navbar = ({ onToggleSidebar, sidebarOpen }) => {
           {notifDot && <span className={styles.notifBadge} />}
         </button>
 
-        <button className={styles.iconBtn} aria-label="Giao diện">
+        {/* <button className={styles.iconBtn} aria-label="Giao diện">
           <IconSun />
-        </button>
+        </button> */}
 
         <div className={styles.userChip}>
           <div className={styles.chipAvatar}>
