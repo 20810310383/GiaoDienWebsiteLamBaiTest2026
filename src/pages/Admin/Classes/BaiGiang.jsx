@@ -1219,9 +1219,6 @@ const BaiGiang = () => {
                       <Editor
                         key={`question-editor-${index}`}
                         apiKey={TINYMCE_API_KEY}
-                        onInit={(evt, editor) => {
-                          questionEditorRef.current = editor;
-                        }}
                         initialValue={question.noiDungCauHoi || ""}
                         onChange={(content) => {
                           updateQuestionContent(index, content);
@@ -1273,7 +1270,7 @@ const BaiGiang = () => {
                             input.click();
                           },
                           init_instance_callback: (editor) => {
-                            editor.on('SetContent input change', () => {
+                            editor.on('blur', () => {
                               const content = editor.getContent();
                               updateQuestionContent(index, content);
                             });
@@ -1368,7 +1365,7 @@ const BaiGiang = () => {
                             key={`giaithich-editor-${index}`}
                             apiKey={TINYMCE_API_KEY}
                             initialValue={question.giaiThich || ""}
-                            onEditorChange={(content) => {
+                            onChange={(content) => {
                               updateGiaiThichContent(index, content);
                             }}
                             init={{
@@ -1377,6 +1374,12 @@ const BaiGiang = () => {
                               plugins: ["lists", "link", "wordcount", "image"],
                               toolbar: "bold italic | bullist numlist | image",
                               images_upload_handler: handleEditorUpload,
+                              init_instance_callback: (editor) => {
+                                editor.on('blur', () => {
+                                  const content = editor.getContent();
+                                  updateGiaiThichContent(index, content);
+                                });
+                              },
                               content_style: "body { font-family: 'Segoe UI', sans-serif; font-size: 14px; direction: ltr; text-align: left; }",
                             }}
                           />
