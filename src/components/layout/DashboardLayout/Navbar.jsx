@@ -45,6 +45,7 @@ const ROUTE_LABELS = {
   "/tai-khoan-cua-toi": "Tài khoản của tôi",
   "/lop-hoc": "Lớp học",
   "/403": "Quyền truy cập",
+  "/admin/lich-su-thi": "Lịch sử thi của lớp tôi",
 };
 
 /* ── Marquee messages ── */

@@ -30,57 +30,7 @@ const ScrollToTop = () => {
   return null;
 };
 
-const router1 = createBrowserRouter([
-  // 1️⃣ DASHBOARD LÀ GỐC (PATH: "/")
-  // Toàn bộ các trang quản lý sẽ nằm ở đây
-  {
-    path: "/",
-    element: (
-      <UserProtectedRoute>
-        {/* <ScrollToTop /> */}
-        <DashboardLayout />
-      </UserProtectedRoute>
-    ),
-    errorElement: <NotFound />,
-    children: [
-      {
-        index: true, // Đây sẽ là trang mặc định khi vào domain.com
-        element: <Home />,
-      },
-      {
-        path: "tai-khoan-cua-toi",
-        element: <TaiKhoanCuaToi />,
-      },
-      {
-        path: "mon-hoc",
-        element: <div>Trang quản lý môn học</div>,
-      },
-      {
-        path: "lop-hoc",
-        element: <Classes />,
-      },
-      {
-        path: "lich-su",
-        element: <div>Trang xem lịch sử làm bài</div>,
-      },
-      {
-        path: "403",
-        element: <ForbiddenPage />,
-      },
-    ],
-  },
 
-  // 2️⃣ TRANG ĐĂNG NHẬP (Nằm ngoài Layout Dashboard)
-  {
-    path: "dang-nhap",
-    element: (
-      <>
-        <ScrollToTop />
-        <DangNhap />
-      </>
-    ),
-  },
-]);
 
 const router = createBrowserRouter([
   {
@@ -103,8 +53,6 @@ const router = createBrowserRouter([
           { path: "hoc-sinh/bo-suu-tap", element: <BoSuuTap /> },
           { path: "hoc-sinh/lam-bai/:id", element: <LamBai /> },
           { path: "admin/lich-su-thi", element: <LichSuThi /> },
-          { path: "mon-hoc", element: <div>Trang quản lý môn học</div> },
-          { path: "lich-su", element: <div>Trang xem lịch sử làm bài</div> },
           { path: "403", element: <ForbiddenPage /> },
         ],
       },
