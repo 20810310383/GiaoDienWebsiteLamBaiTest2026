@@ -331,15 +331,19 @@ const BaiGiang = () => {
 
   // Cập nhật nội dung câu hỏi (dùng Editor)
   const updateQuestionContent = (index, content) => {
+    // Đảm bảo content luôn là string
+    const safeContent = typeof content === 'string' ? content : '';
     setTempQuestions((prev) =>
-      prev.map((q, i) => (i === index ? { ...q, noiDungCauHoi: content } : q))
+      prev.map((q, i) => (i === index ? { ...q, noiDungCauHoi: safeContent } : q))
     );
   };
 
   // Cập nhật Lưu ý (dùng Editor)
   const updateGiaiThichContent = (index, content) => {
+    // Đảm bảo content luôn là string
+    const safeContent = typeof content === 'string' ? content : '';
     setTempQuestions((prev) =>
-      prev.map((q, i) => (i === index ? { ...q, giaiThich: content } : q))
+      prev.map((q, i) => (i === index ? { ...q, giaiThich: safeContent } : q))
     );
   };
 
@@ -363,7 +367,7 @@ const BaiGiang = () => {
   const handleSaveQuestions = async () => {
     const hasEmpty = tempQuestions.some((q) => {
       const content = q.noiDungCauHoi;
-      const hasContent = content && content.trim().length > 0 && content !== "<p></p>";
+      const hasContent = typeof content === 'string' && content.trim().length > 0 && content !== "<p></p>";
       const hasCorrectAnswer = q.cacDapAn.some((a) => a.laDapAnDung);
       return !hasContent || !hasCorrectAnswer;
     });
@@ -547,7 +551,7 @@ const BaiGiang = () => {
   // Kiểm tra câu hỏi hợp lệ (chỉ check không rỗng)
   const isQuestionValid = (q) => {
     const content = q.noiDungCauHoi;
-    const hasContent = content && content.trim().length > 0 && content !== "<p></p>";
+    const hasContent = typeof content === 'string' && content.trim().length > 0 && content !== "<p></p>";
     const hasAnswers = q.cacDapAn.length >= 2 && q.cacDapAn.some((a) => a.laDapAnDung);
     return hasContent && hasAnswers;
   };
@@ -1221,7 +1225,9 @@ const BaiGiang = () => {
                         apiKey={TINYMCE_API_KEY}
                         initialValue={question.noiDungCauHoi || ""}
                         onChange={(content) => {
-                          updateQuestionContent(index, content);
+                          if (typeof content === 'string') {
+                            updateQuestionContent(index, content);
+                          }
                         }}
                         init={{
                           height: 300,
@@ -1366,7 +1372,9 @@ const BaiGiang = () => {
                             apiKey={TINYMCE_API_KEY}
                             initialValue={question.giaiThich || ""}
                             onChange={(content) => {
-                              updateGiaiThichContent(index, content);
+                              if (typeof content === 'string') {
+                                updateGiaiThichContent(index, content);
+                              }
                             }}
                             init={{
                               height: 120,
