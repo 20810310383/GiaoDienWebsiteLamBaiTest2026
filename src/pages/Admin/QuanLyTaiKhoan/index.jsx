@@ -45,7 +45,7 @@ import { getPublicUrl } from "../../../utils/formatURL";
 const { Option } = Select;
 
 const QuanLyTaiKhoan = () => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(false);
@@ -166,22 +166,24 @@ const QuanLyTaiKhoan = () => {
           size="small"
           danger={user.isActive}
           icon={user.isActive ? <Lock size={16} /> : <Unlock size={16} />}
-          onClick={() => handleToggleStatus(user._id)}
+          onClick={() => user.role !== "admin" ? handleToggleStatus(user._id) : message.error("Không thể thay đổi trạng thái tài khoản admin")}
         >
           {user.isActive ? "Khóa" : "Mở khóa"}
         </Button>
-        <Popconfirm
-          title="Xóa tài khoản?"
-          description="Hành động này không thể hoàn tác."
-          onConfirm={() => handleDelete(user._id)}
-          okText="Xóa"
-          cancelText="Hủy"
-          okButtonProps={{ danger: true }}
-        >
-          <Button type="text" size="small" danger icon={<Trash2 size={16} />}>
-            Xóa
-          </Button>
-        </Popconfirm>
+        {user.role !== "admin" && (
+          <Popconfirm
+            title="Xóa tài khoản?"
+            onConfirm={() => handleDelete(user._id)}
+            okText="Xóa"
+            cancelText="Hủy"
+            okButtonProps={{ danger: true }}
+            description="Hành động này không thể hoàn tác."
+          >
+            <Button type="text" size="small" danger icon={<Trash2 size={16} />}>
+              Xóa
+            </Button>
+          </Popconfirm>
+        )}
       </div>
     </Card>
   );
@@ -334,19 +336,21 @@ const QuanLyTaiKhoan = () => {
               type="text"
               size="small"
               icon={record.isActive ? <Unlock size={16} /> : <Lock size={16} />}
-              onClick={() => handleToggleStatus(record._id)}
+              onClick={() => (record.role !== "admin") ? handleToggleStatus(record._id) : message.error("Không thể thay đổi trạng thái tài khoản admin")}
             />
           </Tooltip>
+         
           <Popconfirm
             title="Xóa tài khoản?"
             description="Hành động này không thể hoàn tác."
-            onConfirm={() => handleDelete(record._id)}
+            onConfirm={() => record.role !== "admin" ? handleDelete(record._id) : message.error("Không thể xóa tài khoản admin")}
             okText="Xóa"
             cancelText="Hủy"
             okButtonProps={{ danger: true }}
+            disabled={record.role === "admin"}
           >
             <Tooltip title="Xóa">
-              <Button type="text" size="small" danger icon={<Trash2 size={16} />} />
+              <Button type="text" size="small" danger icon={<Trash2 size={16} />} disabled={record.role === "admin"} />
             </Tooltip>
           </Popconfirm>
         </Space>
