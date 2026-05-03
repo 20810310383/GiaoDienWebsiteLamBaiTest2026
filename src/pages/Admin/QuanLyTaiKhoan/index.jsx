@@ -16,7 +16,7 @@ import {
   Popconfirm,
   Avatar,
   Tooltip,
-  Dropdown,
+  Badge,
 } from "antd";
 import {
   Search,
@@ -32,6 +32,10 @@ import {
   MoreVertical,
   Eye,
   RefreshCw,
+  Mail,
+  Phone,
+  Calendar,
+  ChevronRight,
 } from "lucide-react";
 import { getAllUsers, getUserStats, deleteUser, toggleUserStatus, changeUserRole } from "../../../services/apiQuanLyNguoiDung";
 import styles from "./QuanLyTaiKhoan.module.css";
@@ -45,6 +49,7 @@ const QuanLyTaiKhoan = () => {
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -102,6 +107,84 @@ const QuanLyTaiKhoan = () => {
   useEffect(() => {
     fetchStats();
   }, []);
+
+  // Detect mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // User Card for mobile
+  const UserCard = ({ user }) => (
+    <Card className={styles.userCard} hoverable>
+      <div className={styles.userCardHeader}>
+        <Avatar
+          src={getPublicUrl(user.anh_dai_dien)}
+          size={56}
+          style={{ backgroundColor: user.role === "admin" ? "#ff4d4f" : user.role === "giaovien" ? "#1890ff" : "#52c41a" }}
+        >
+          {user.ho_ten?.charAt(0)}
+        </Avatar>
+        <div className={styles.userCardInfo}>
+          <span className={styles.userCardName}>{user.ho_ten}</span>
+          <span className={styles.userCardCode}>@{user.ma_so}</span>
+          <div className={styles.userCardBadges}>
+            {getRoleBadge(user.role)}
+            {getStatusBadge(user.isActive)}
+          </div>
+        </div>
+      </div>
+      <div className={styles.userCardDetails}>
+        <div className={styles.userCardDetail}>
+          <Mail size={14} />
+          <span>{user.email}</span>
+        </div>
+        <div className={styles.userCardDetail}>
+          <Phone size={14} />
+          <span>{user.so_dien_thoai || "Chưa cập nhật"}</span>
+        </div>
+        <div className={styles.userCardDetail}>
+          <Calendar size={14} />
+          <span>{new Date(user.ngay_tao).toLocaleDateString("vi-VN")}</span>
+        </div>
+      </div>
+      <div className={styles.userCardActions}>
+        <Button
+          type="text"
+          size="small"
+          icon={<Shield size={16} />}
+          onClick={() => showPermissionModal(user)}
+        >
+          Phân quyền
+        </Button>
+        <Button
+          type="text"
+          size="small"
+          danger={user.isActive}
+          icon={user.isActive ? <Lock size={16} /> : <Unlock size={16} />}
+          onClick={() => handleToggleStatus(user._id)}
+        >
+          {user.isActive ? "Khóa" : "Mở khóa"}
+        </Button>
+        <Popconfirm
+          title="Xóa tài khoản?"
+          description="Hành động này không thể hoàn tác."
+          onConfirm={() => handleDelete(user._id)}
+          okText="Xóa"
+          cancelText="Hủy"
+          okButtonProps={{ danger: true }}
+        >
+          <Button type="text" size="small" danger icon={<Trash2 size={16} />}>
+            Xóa
+          </Button>
+        </Popconfirm>
+      </div>
+    </Card>
+  );
 
   // Handle filter change
   const handleFilterChange = (key, value) => {
@@ -246,11 +329,11 @@ const QuanLyTaiKhoan = () => {
               onClick={() => showPermissionModal(record)}
             />
           </Tooltip>
-          <Tooltip title={record.trang_thai_hoat_dong ? "Khóa" : "Mở khóa"}>
+          <Tooltip title={record.isActive ? "Khóa" : "Mở khóa"}>
             <Button
               type="text"
               size="small"
-              icon={record.trang_thai_hoat_dong ? <Lock size={16} /> : <Unlock size={16} />}
+              icon={record.isActive ? <Unlock size={16} /> : <Lock size={16} />}
               onClick={() => handleToggleStatus(record._id)}
             />
           </Tooltip>
@@ -406,22 +489,58 @@ const QuanLyTaiKhoan = () => {
         </Row>
       </Card>
 
-      {/* Table */}
-      <Card className={styles.tableCard}>
-        <Table
-          columns={columns}
-          dataSource={users}
-          rowKey="_id"
-          loading={loading}
-          pagination={{
-            ...pagination,
-            showSizeChanger: true,
-            showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} người dùng`,
-          }}
-          onChange={handleTableChange}
-          scroll={{ x: 800 }}
-        />
-      </Card>
+      {/* User List - Table on Desktop, Cards on Mobile */}
+      {isMobile ? (
+        <div className={styles.userCardList}>
+          <Row gutter={[12, 12]}>
+            {users.map((user) => (
+              <Col key={user._id} xs={24}>
+                <UserCard user={user} />
+              </Col>
+            ))}
+          </Row>
+          {users.length === 0 && !loading && (
+            <div className={styles.emptyState}>
+              <Users size={48} />
+              <p>Không tìm thấy người dùng</p>
+            </div>
+          )}
+          <div className={styles.mobilePagination}>
+            <Button
+              icon={<ChevronRight size={16} style={{ transform: "rotate(180deg)" }} />}
+              disabled={pagination.current === 1}
+              onClick={() => setPagination(prev => ({ ...prev, current: prev.current - 1 }))}
+            >
+              Trang trước
+            </Button>
+            <span className={styles.pageInfo}>
+              Trang {pagination.current} / {Math.ceil(pagination.total / pagination.pageSize) || 1}
+            </span>
+            <Button
+              icon={<ChevronRight size={16} />}
+              disabled={pagination.current >= Math.ceil(pagination.total / pagination.pageSize)}
+              onClick={() => setPagination(prev => ({ ...prev, current: prev.current + 1 }))}
+            >
+              Trang sau
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Card className={styles.tableCard}>
+          <Table
+            columns={columns}
+            dataSource={users}
+            rowKey="_id"
+            loading={loading}
+            pagination={{
+              ...pagination,
+              showSizeChanger: true,
+              showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} người dùng`,
+            }}
+            onChange={handleTableChange}
+          />
+        </Card>
+      )}
 
       {/* Permission Modal */}
       <Modal
