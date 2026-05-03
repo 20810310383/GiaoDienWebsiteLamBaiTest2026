@@ -20,10 +20,16 @@ const baiGiangThuongMaiAPI = {
     return res.data;
   },
 
-  // Lấy danh sách bài đã mua
-  getDanhSachDaMua: async (token) => {
+  // Lấy danh sách bài đã mua (có phân trang và tìm kiếm)
+  getDanhSachDaMua: async (token, params = {}) => {
+    const { page = 1, limit = 10, search = "" } = params;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      search
+    });
     const res = await axios.get(
-      `${API_URL}/api/bai-giang-thuong-mai/danh-sach-da-mua`,
+      `${API_URL}/api/bai-giang-thuong-mai/danh-sach-da-mua?${queryParams}`,
       getAuthHeaders(token)
     );
     return res.data;
@@ -49,18 +55,25 @@ const baiGiangThuongMaiAPI = {
   },
 
   // Xem đáp án
-  xemDapAn: async (idBaiGiang, token) => {
+  xemDapAn: async (idBaiGiang, token, lanThi = null) => {
+    const params = lanThi ? `?lan_thi=${lanThi}` : '';
     const res = await axios.get(
-      `${API_URL}/api/bai-giang-thuong-mai/xem-dap-an/${idBaiGiang}`,
+      `${API_URL}/api/bai-giang-thuong-mai/xem-dap-an/${idBaiGiang}${params}`,
       getAuthHeaders(token)
     );
     return res.data;
   },
 
-  // Lịch sử thi
-  getLichSuThi: async (token) => {
+  // Lịch sử thi (có phân trang và tìm kiếm)
+  getLichSuThi: async (token, params = {}) => {
+    const { page = 1, limit = 10, search = "" } = params;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      search
+    });
     const res = await axios.get(
-      `${API_URL}/api/bai-giang-thuong-mai/lich-su-thi`,
+      `${API_URL}/api/bai-giang-thuong-mai/lich-su-thi?${queryParams}`,
       getAuthHeaders(token)
     );
     return res.data;
