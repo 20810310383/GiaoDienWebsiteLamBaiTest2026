@@ -1019,7 +1019,8 @@ const BaiGiang = () => {
         }
       >
         {/* Import Word Section */}
-        <div className={styles.importWordSection}>
+        {/* import từ word - tạm đóng vì chưa nâng cấp */}
+        {/* <div className={styles.importWordSection}>
           <div className={styles.importWordHeader}>
             <div className={styles.importWordIcon}>
               <FileText size={20} />
@@ -1087,7 +1088,7 @@ const BaiGiang = () => {
               ✓ Đã import thành công {importedWordCount} câu hỏi!
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Question Navigator */}
         <div className={styles.questionNav}>
