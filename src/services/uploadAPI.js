@@ -73,4 +73,22 @@ export const uploadAPI = {
 
     return res.json();
   },
+
+  // Upload file Word cho import câu hỏi
+  uploadWord: async (file) => {
+    const formData = new FormData();
+    formData.append("document", file);
+
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/upload-document/word`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Upload file Word thất bại");
+    }
+
+    return res.json();
+  },
 };

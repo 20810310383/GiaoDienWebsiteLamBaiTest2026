@@ -52,6 +52,7 @@ import {
   Video,
   Image,
   Star,
+  HelpCircle,
 } from "lucide-react";
 import { Editor } from "@tinymce/tinymce-react";
 import styles from "./BaiGiang.module.css";
@@ -101,10 +102,13 @@ const BaiGiang = () => {
   const [tempBaiGiangId, setTempBaiGiangId] = useState(null);
   const [tempBaiGiangName, setTempBaiGiangName] = useState("");
   const [savingQuestions, setSavingQuestions] = useState(false);
+  const [importingWord, setImportingWord] = useState(false);
+  const [importedWordCount, setImportedWordCount] = useState(0);
   const [expandedQuestions, setExpandedQuestions] = useState({});
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [previewBaiGiang, setPreviewBaiGiang] = useState(null);
   const [previewQuestions, setPreviewQuestions] = useState([]);
+  const questionRefs = useRef({});
   const [previewLoading, setPreviewLoading] = useState(false);
 
   // Editor ref
@@ -393,6 +397,63 @@ const BaiGiang = () => {
       message.error(error.message || "Lưu câu hỏi thất bại");
     } finally {
       setSavingQuestions(false);
+    }
+  };
+
+  // Import câu hỏi từ Word
+  const handleImportWord = async (file) => {
+    if (!tempBaiGiangId) {
+      message.error("Vui lòng chọn bài giảng trước!");
+      return;
+    }
+
+    if (!file.name.endsWith('.docx') && !file.name.endsWith('.doc')) {
+      message.error("Chỉ chấp nhận file .docx hoặc .doc");
+      return;
+    }
+
+    setImportingWord(true);
+    setImportedWordCount(0);
+    try {
+      // Bước 1: Upload file lên server
+      const uploadRes = await uploadAPI.uploadWord(file);
+      
+      if (!uploadRes.success) {
+        throw new Error(uploadRes.message || "Upload file thất bại");
+      }
+
+      // Bước 2: Gọi API import với filename
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/bai-giang/${tempBaiGiangId}/cau-hoi/import-word`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ filename: uploadRes.filename }),
+      });
+
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
+        message.success(data.message);
+        setImportedWordCount(data.soCauHoiThem || 0);
+        
+        // Refresh câu hỏi trong drawer
+        const bgRes = await getBaiGiangById(tempBaiGiangId, token);
+        const fullBg = bgRes.data || bgRes;
+        const questions = fullBg.danhSachCauHoi || [];
+        
+        // Merge vào tempQuestions
+        setTempQuestions((prev) => [...prev, ...questions.slice(-(data.soCauHoiThem || 0))]);
+        setOriginalQuestions(questions);
+      } else {
+        message.error(data.message || "Import thất bại");
+      }
+    } catch (error) {
+      console.error("Lỗi import Word:", error);
+      message.error(error.message || "Import thất bại");
+    } finally {
+      setImportingWord(false);
     }
   };
 
@@ -957,15 +1018,91 @@ const BaiGiang = () => {
           </div>
         }
       >
+        {/* Import Word Section */}
+        <div className={styles.importWordSection}>
+          <div className={styles.importWordHeader}>
+            <div className={styles.importWordIcon}>
+              <FileText size={20} />
+            </div>
+            <div className={styles.importWordText}>
+              <div className={styles.importWordTitle}>Import từ Word</div>
+              <div className={styles.importWordSubtitle}>Upload file .docx để thêm nhiều câu hỏi cùng lúc</div>
+            </div>
+            <Tooltip 
+              title={
+                <div className={styles.wordGuideTooltip}>
+                  <div className={styles.wordGuideTitle}>📝 Hướng dẫn định dạng Word</div>
+                  <div className={styles.wordGuideContent}>
+                    <p><strong>Cấu trúc mỗi câu hỏi (5-6 dòng):</strong></p>
+                    <ol>
+                      <li><strong>Dòng 1:</strong> Nội dung câu hỏi</li>
+                      <li><strong>Dòng 2:</strong> A. Đáp án 1</li>
+                      <li><strong>Dòng 3:</strong> B. Đáp án 2</li>
+                      <li><strong>Dòng 4:</strong> C. Đáp án 3</li>
+                      <li><strong>Dòng 5:</strong> D. Đáp án 4 <em>(bôi đậm đáp án đúng)</em></li>
+                      <li><strong>Dòng 6:</strong> <em>(Tùy chọn) Note: Giải thích...</em></li>
+                    </ol>
+                    <p><strong>Cách xác định đáp án đúng:</strong></p>
+                    <ul>
+                      <li>Bôi đậm (Bold) đáp án đúng trong Word</li>
+                      <li>Phím tắt: Ctrl+B</li>
+                    </ul>
+                    <p><strong>Lưu ý:</strong></p>
+                    <ul>
+                      <li>Mỗi câu hỏi cách nhau 1 dòng trống</li>
+                      <li>Có thể thêm giải thích sau mỗi câu</li>
+                      <li>File .docx hoặc .doc</li>
+                    </ul>
+                  </div>
+                </div>
+              }
+              placement="right"
+              overlayClassName={styles.wordGuideOverlay}
+            >
+              <button className={styles.wordGuideBtn}>
+                <HelpCircle size={16} />
+                Hướng dẫn
+              </button>
+            </Tooltip>
+          </div>
+          <Upload
+            accept=".docx,.doc"
+            showUploadList={false}
+            beforeUpload={(file) => {
+              handleImportWord(file);
+              return false;
+            }}
+          >
+            <Button 
+              type="dashed" 
+              loading={importingWord}
+              icon={<UploadIcon size={16} />}
+              className={styles.importWordBtn}
+            >
+              {importingWord ? "Đang xử lý..." : "Chọn file Word"}
+            </Button>
+          </Upload>
+          {importedWordCount > 0 && (
+            <div className={styles.importWordSuccess}>
+              ✓ Đã import thành công {importedWordCount} câu hỏi!
+            </div>
+          )}
+        </div>
+
         {/* Question Navigator */}
         <div className={styles.questionNav}>
           {tempQuestions.map((q, index) => (
             <div
               key={index}
+              ref={(el) => (questionRefs.current[`nav_${index}`] = el)}
               className={`${styles.questionNavItem} ${index === activeQuestionIndex ? styles.questionNavActive : ""}`}
               onClick={() => {
                 setActiveQuestionIndex(index);
                 setExpandedQuestions((prev) => ({ ...prev, [index]: true }));
+                // Scroll vào câu hỏi
+                setTimeout(() => {
+                  questionRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
               }}
             >
               <span className={styles.questionNavNumber}>{index + 1}</span>
@@ -992,10 +1129,15 @@ const BaiGiang = () => {
             tempQuestions.map((question, index) => (
               <div
                 key={index}
+                ref={(el) => (questionRefs.current[index] = el)}
                 className={`${styles.questionItem} ${index === activeQuestionIndex ? styles.questionItemActive : ""}`}
                 onClick={() => {
                   setActiveQuestionIndex(index);
                   setExpandedQuestions((prev) => ({ ...prev, [index]: true }));
+                  // Scroll vào câu hỏi
+                  setTimeout(() => {
+                    questionRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }, 100);
                 }}
               >
                 <div className={styles.questionItemHeader}>

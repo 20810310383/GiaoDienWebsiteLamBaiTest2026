@@ -200,3 +200,26 @@ export async function getThongKeBaiGiang(params = {}, token) {
     },
   });
 }
+
+/* ──────────────────────────────────────────────────────────────────
+   IMPORT TỪ FILE
+   ────────────────────────────────────────────────────────────────── */
+
+/**
+ * 13. Import câu hỏi từ file Word (.docx)
+ * @param {string} id - ID bài giảng
+ * @param {File} file - File Word cần import
+ * @param {string} token
+ */
+export async function importCauHoiTuWord(id, file, token) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return await apiFetchTongQuat(`/api/bai-giang/${id}/cau-hoi/import-word`, {
+    method: "POST",
+    body: formData,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}

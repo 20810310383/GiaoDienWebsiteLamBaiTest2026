@@ -1882,3 +1882,177 @@
   transform: scale(1.1);
   box-shadow: 0 4px 12px rgba(24, 95, 165, 0.3);
 }
+
+/* ─── Import Word Section ─── */
+.importWordSection {
+  background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+  border: 2px dashed var(--border-med);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.importWordHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.importWordIcon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, var(--accent-violet) 0%, var(--accent-cyan) 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 4px 12px rgba(24, 95, 165, 0.25);
+}
+
+.importWordText {
+  flex: 1;
+}
+
+.importWordTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.importWordSubtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.importWordBtn {
+  align-self: flex-start;
+  border-color: var(--accent-violet) !important;
+  color: var(--accent-violet) !important;
+  font-weight: 600;
+  border-radius: 10px;
+  height: 40px;
+}
+
+.importWordBtn:hover {
+  background: rgba(24, 95, 165, 0.06) !important;
+  border-color: var(--accent-violet) !important;
+}
+
+.importWordSuccess {
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(21, 128, 61, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+  border: 1px solid rgba(21, 128, 61, 0.25);
+  border-radius: 10px;
+  color: var(--accent-emerald);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Word Guide Button & Tooltip */
+.wordGuideBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, rgba(180, 83, 9, 0.08) 0%, rgba(217, 119, 6, 0.05) 100%);
+  border: 1.5px solid rgba(180, 83, 9, 0.25);
+  border-radius: 20px;
+  color: var(--accent-amber);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.wordGuideBtn:hover {
+  background: linear-gradient(135deg, rgba(180, 83, 9, 0.15) 0%, rgba(217, 119, 6, 0.1) 100%);
+  border-color: var(--accent-amber);
+  transform: translateY(-1px);
+}
+
+.wordGuideOverlay :global(.ant-tooltip-inner) {
+  background: #fff !important;
+  box-shadow: 0 8px 30px rgba(4, 44, 83, 0.15) !important;
+  border: 1px solid var(--border-med) !important;
+  border-radius: 14px !important;
+  padding: 0 !important;
+  max-width: 380px !important;
+}
+
+.wordGuideOverlay :global(.ant-tooltip-arrow::before),
+.wordGuideOverlay :global(.ant-tooltip-arrow::after) {
+  background: #fff !important;
+}
+
+.wordGuideTooltip {
+  padding: 0;
+}
+
+.wordGuideTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: linear-gradient(135deg, rgba(24, 95, 165, 0.05) 0%, rgba(8, 145, 178, 0.03) 100%);
+  border-radius: 14px 14px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wordGuideContent {
+  padding: 14px 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.wordGuideContent p {
+  margin: 0 0 8px 0;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.wordGuideContent p:last-child {
+  margin-bottom: 0;
+}
+
+.wordGuideContent ol {
+  margin: 0 0 12px 0;
+  padding-left: 18px;
+}
+
+.wordGuideContent ol li {
+  margin-bottom: 6px;
+  padding-left: 4px;
+}
+
+.wordGuideContent ul {
+  margin: 0 0 12px 0;
+  padding-left: 16px;
+}
+
+.wordGuideContent ul li {
+  margin-bottom: 4px;
+  padding-left: 2px;
+}
+
+.wordGuideContent strong {
+  color: var(--accent-violet);
+  font-weight: 600;
+}
+
+.wordGuideContent em {
+  color: var(--accent-emerald);
+  font-style: normal;
+  font-weight: 500;
+}
