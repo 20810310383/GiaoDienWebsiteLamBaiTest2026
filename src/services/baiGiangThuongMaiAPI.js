@@ -97,6 +97,15 @@ const baiGiangThuongMaiAPI = {
     return res.data;
   },
 
+  // Lấy tiến độ học tập của học sinh
+  getTienDoHocTap: async (token) => {
+    const res = await axios.get(
+      `${API_URL}/api/bai-giang-thuong-mai/tien-do-hoc-tap`,
+      getAuthHeaders(token)
+    );
+    return res.data;
+  },
+
   // Thống kê theo bài giảng (GV)
   thongKeDiemBaiGiang: async (idBaiGiang, token) => {
     const res = await axios.get(

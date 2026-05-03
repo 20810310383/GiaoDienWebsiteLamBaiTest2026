@@ -131,9 +131,8 @@ const BoSuuTap = () => {
 
   // Tab change
   useEffect(() => {
-    if (activeTab === "history") {
-      fetchLichSuThi();
-    }
+    
+    fetchLichSuThi();
   }, [activeTab, fetchLichSuThi]);
 
   // Search debounce

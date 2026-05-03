@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useLocation, NavLink } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import styles from "./Navbar.module.css";
 import { useAuth } from "../../../contexts/AuthContext";
 import { getInitials } from "../../../utils/scrollUtils";
@@ -7,13 +7,7 @@ import { getPublicUrl } from "../../../utils/formatURL";
 
 /* ── Icons ── */
 const IconMenu = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-  >
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
     <line x1="3" y1="6" x2="21" y2="6" />
     <line x1="3" y1="12" x2="21" y2="12" />
     <line x1="3" y1="18" x2="21" y2="18" />
@@ -21,88 +15,57 @@ const IconMenu = () => (
 );
 
 const IconMenuClose = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-  >
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
     <line x1="3" y1="6" x2="21" y2="6" />
     <line x1="6" y1="12" x2="18" y2="12" />
     <line x1="3" y1="18" x2="21" y2="18" />
   </svg>
 );
 
-const IconSearch = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    strokeLinecap="round"
-  >
-    <circle cx="11" cy="11" r="8" />
-    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-  </svg>
-);
-
 const IconBell = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
     <path d="M13.73 21a2 2 0 01-3.46 0" />
   </svg>
 );
 
-const IconSun = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    strokeLinecap="round"
-  >
-    <circle cx="12" cy="12" r="5" />
-    <line x1="12" y1="1" x2="12" y2="3" />
-    <line x1="12" y1="21" x2="12" y2="23" />
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-    <line x1="1" y1="12" x2="3" y2="12" />
-    <line x1="21" y1="12" x2="23" y2="12" />
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+const IconSparkle = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <path d="M12 3l1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5L12 3z" />
+    <path d="M19 17l1 3 3-1-1-3-3 1z" opacity="0.6" />
+    <path d="M5 19l.5 1.5L7 21l-.5-1.5L5 19z" opacity="0.4" />
   </svg>
 );
 
 /* ── Breadcrumb map ── */
 const ROUTE_LABELS = {
   "/": "Trang chủ",
-  "/lop-hoc": "Lớp học",
-  "/lich-su": "Lịch sử làm bài",
-  "/lop-hoc/bai-giang/:classId/:className": "Bài giảng",
-  "/403": "Quyền truy cập",
+  "/hoc-sinh/bo-suu-tap": "Bộ sưu tập",
+  "/hoc-sinh/lam-bai": "Làm bài thi",
   "/tai-khoan-cua-toi": "Tài khoản của tôi",
+  "/lop-hoc": "Lớp học",
+  "/403": "Quyền truy cập",
 };
+
+/* ── Marquee messages ── */
+const MARQUEE_MESSAGES = [
+  "Chào mừng bạn đến với EduPlatform!",
+  "Học tập mỗi ngày để tiến bộ hơn!",
+  "Đừng quên ôn tập trước khi thi nhé!",
+  "Chúc bạn một ngày học tập hiệu quả!",
+  "Thành công là kết quả của sự kiên trì!",
+];
 
 const Navbar = ({ onToggleSidebar, sidebarOpen }) => {
   const location = useLocation();
-  const [searchActive, setSearchActive] = useState(false);
-  const [searchVal, setSearchVal] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const [notifDot, setNotifDot] = useState(true);
-  const searchRef = useRef(null);
-  const { isLoggedIn, user, handleLogout } = useAuth();
+  const [currentMessage, setCurrentMessage] = useState(0);
+  const [fadeIn, setFadeIn] = useState(true);
 
   const pageTitle = ROUTE_LABELS[location.pathname] || "Trang";
 
-  // Scroll detection for glass effect enhancement
+  // Scroll detection
   useEffect(() => {
     const el = document.querySelector("main") || window;
     const handler = () => setScrolled((el.scrollTop || window.scrollY) > 10);
@@ -110,16 +73,25 @@ const Navbar = ({ onToggleSidebar, sidebarOpen }) => {
     return () => el.removeEventListener("scroll", handler);
   }, []);
 
-  // Focus search input when opened
+  // Rotate marquee messages
   useEffect(() => {
-    if (searchActive) searchRef.current?.focus();
-  }, [searchActive]);
+    const interval = setInterval(() => {
+      setFadeIn(false);
+      setTimeout(() => {
+        setCurrentMessage(prev => (prev + 1) % MARQUEE_MESSAGES.length);
+        setFadeIn(true);
+      }, 300);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const today = new Date().toLocaleDateString("vi-VN", {
     weekday: "long",
     day: "numeric",
     month: "long",
   });
+
+  const { user } = useAuth();
 
   return (
     <header className={`${styles.navbar} ${scrolled ? styles.scrolled : ""}`}>
@@ -140,39 +112,34 @@ const Navbar = ({ onToggleSidebar, sidebarOpen }) => {
         </div>
       </div>
 
-      {/* Center search */}
-      <div
-        className={`${styles.searchBar} ${searchActive ? styles.searchActive : ""}`}
-      >
-        <span className={styles.searchIcon}>
-          <IconSearch />
-        </span>
-        <input
-          ref={searchRef}
-          type="text"
-          className={styles.searchInput}
-          placeholder="Tìm kiếm môn học, bài thi..."
-          value={searchVal}
-          onChange={(e) => setSearchVal(e.target.value)}
-          onFocus={() => setSearchActive(true)}
-          onBlur={() => {
-            setSearchActive(false);
-          }}
-        />
-        {searchVal && (
-          <button
-            className={styles.searchClear}
-            onClick={() => setSearchVal("")}
+      {/* Center - Marquee Ticker */}
+      <div className={styles.tickerWrap}>
+        <div className={styles.tickerBadge}>
+          <IconSparkle />
+        </div>
+        <div className={styles.tickerTrack}>
+          <span 
+            className={styles.tickerText}
+            style={{ opacity: fadeIn ? 1 : 0 }}
           >
-            ×
-          </button>
-        )}
-        <kbd className={styles.searchKbd}>⌘K</kbd>
+            {MARQUEE_MESSAGES[currentMessage]}
+          </span>
+        </div>
       </div>
 
       {/* Right actions */}
       <div className={styles.right}>
-        <span className={styles.dateChip}>{today}</span>
+        <div className={styles.dateChip}>
+          <span className={styles.dateIcon}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+          </span>
+          <span>{today}</span>
+        </div>
 
         <button
           className={styles.iconBtn}
@@ -183,10 +150,6 @@ const Navbar = ({ onToggleSidebar, sidebarOpen }) => {
           {notifDot && <span className={styles.notifBadge} />}
         </button>
 
-        {/* <button className={styles.iconBtn} aria-label="Giao diện">
-          <IconSun />
-        </button> */}
-
         <div className={styles.userChip}>
           <div className={styles.chipAvatar}>
             {user?.anh_dai_dien ? (
@@ -196,13 +159,10 @@ const Navbar = ({ onToggleSidebar, sidebarOpen }) => {
                 className={styles.avatarImg}
                 onError={(e) => {
                   e.target.style.display = "none";
-                  e.target.nextSibling.style.display = "flex";
                 }}
               />
             ) : (
-              <span className={user?.anh_dai_dien ? styles.hiddenInitial : ""}>
-                {getInitials(user?.ho_ten)}
-              </span>
+              <span>{getInitials(user?.ho_ten)}</span>
             )}
           </div>
 

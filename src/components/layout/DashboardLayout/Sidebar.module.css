@@ -432,6 +432,13 @@
   transition: width 1s var(--ease-out);
 }
 
+.progressSub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  display: block;
+}
+
 .logoutBtn {
   display: flex;
   align-items: center;

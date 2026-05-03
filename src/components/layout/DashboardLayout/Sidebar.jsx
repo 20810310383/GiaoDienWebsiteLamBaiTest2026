@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import styles from "./Sidebar.module.css";
 import { useAuth } from "../../../contexts/AuthContext";
 import { getInitials } from "../../../utils/scrollUtils";
 import { getPublicUrl } from "../../../utils/formatURL";
+import baiGiangThuongMaiAPI from "../../../services/baiGiangThuongMaiAPI";
 
 /* ── Icons (inline SVG) ── */
 const IconHome = () => (
@@ -147,12 +148,12 @@ const NAV_ITEMS = [
         accent: "violet",
         roles: ["hocsinh"] // Chỉ hiển thị cho học sinh
       },
-      {
-        to: "/lich-su",
-        label: "Lịch sử làm bài",
-        icon: <IconHistory />,
-        accent: "amber",
-      },
+      // {
+      //   to: "/lich-su",
+      //   label: "Lịch sử làm bài",
+      //   icon: <IconHistory />,
+      //   accent: "amber",
+      // },
     ],
   },
 
@@ -178,6 +179,26 @@ const NAV_ITEMS = [
 const Sidebar = ({ isOpen, isMobile, onClose }) => {
   const location = useLocation();
   const { isLoggedIn, user, handleLogout } = useAuth();
+  const [tienDo, setTienDo] = useState({ phanTramHoanThanh: 0, tongBaiDaMua: 0 });
+
+  // Lấy tiến độ học tập
+  useEffect(() => {
+    const fetchTienDo = async () => {
+      const token = localStorage.getItem("token");
+      if (!token || user?.role !== "hocsinh") return;
+      
+      try {
+        const res = await baiGiangThuongMaiAPI.getTienDoHocTap(token);
+        if (res.success) {
+          setTienDo(res.data);
+        }
+      } catch (error) {
+        console.error("Lỗi lấy tiến độ:", error);
+      }
+    };
+
+    fetchTienDo();
+  }, [user]);
 
   const isActive = (to, exact) => {
     if (exact) return location.pathname === to;
@@ -274,15 +295,23 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
 
         {/* Bottom */}
         <div className={styles.sidebarBottom}>
-          <div className={styles.bottomCard}>
-            <div className={styles.progressInfo}>
-              <span>Tiến độ học tập</span>
-              <span className={styles.progressPct}>72%</span>
+          {user?.role === "hocsinh" && (
+            <div className={styles.bottomCard}>
+              <div className={styles.progressInfo}>
+                <span>Tiến độ học tập</span>
+                <span className={styles.progressPct}>{tienDo.phanTramHoanThanh}%</span>
+              </div>
+              <div className={styles.progressBar}>
+                <div 
+                  className={styles.progressFill} 
+                  style={{ width: `${tienDo.phanTramHoanThanh}%` }} 
+                />
+              </div>
+              <span className={styles.progressSub}>
+                {tienDo.baiDaHoanThanh || 0}/{tienDo.tongBaiDaMua || 0} bài đã hoàn thành
+              </span>
             </div>
-            <div className={styles.progressBar}>
-              <div className={styles.progressFill} style={{ width: "72%" }} />
-            </div>
-          </div>
+          )}
           <button className={styles.logoutBtn} onClick={handleLogout}>
             <IconLogout />
             <span>Đăng xuất</span>
