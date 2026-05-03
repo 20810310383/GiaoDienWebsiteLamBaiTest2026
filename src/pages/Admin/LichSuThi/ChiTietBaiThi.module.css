@@ -1,0 +1,132 @@
+.modal :global(.ant-modal-content) {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.modalTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+/* Info Card */
+.infoCard {
+  border-radius: 12px;
+  height: 100%;
+}
+
+.hocVienHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.hocVienText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hocVienText strong {
+  font-size: 16px;
+  color: #1a1a2e;
+}
+
+.hocVienText span {
+  font-size: 13px;
+  color: #666;
+}
+
+/* Result Card */
+.resultCard {
+  border-radius: 12px;
+  height: 100%;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: #666;
+}
+
+.statValue {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+/* Descriptions */
+.descriptions {
+  margin-top: 16px;
+}
+
+.descriptions :global(.ant-descriptions-title) {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+/* Section Title */
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 16px;
+}
+
+/* Questions Section */
+.questionsSection {
+  margin-top: 16px;
+}
+
+/* Content Section */
+.contentSection {
+  margin-top: 16px;
+}
+
+.contentBody {
+  background: #f5f5f5;
+  padding: 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.contentBody img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 8px 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modal :global(.ant-modal) {
+    max-width: 95vw;
+  }
+
+  .hocVienHeader {
+    flex-direction: column;
+  }
+
+  .statItem {
+    padding: 8px 0;
+  }
+}

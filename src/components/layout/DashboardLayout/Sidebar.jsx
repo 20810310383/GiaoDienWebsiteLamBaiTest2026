@@ -142,18 +142,19 @@ const NAV_ITEMS = [
       //   { to: "/mon-hoc", label: "Môn học", icon: <IconBook />, accent: "cyan" },
       { to: "/lop-hoc", label: "Lớp học", icon: <IconUsers />, accent: "pink" },
       { 
+        to: "/admin/lich-su-thi", 
+        label: "Lịch sử thi", 
+        icon: <IconHistory />, 
+        accent: "amber",
+        roles: ["admin", "giaovien"] // Chỉ hiển thị cho admin và giaovien
+      },
+      { 
         to: "/hoc-sinh/bo-suu-tap", 
         label: "Bộ sưu tập", 
         icon: <IconCollection />, 
         accent: "violet",
         roles: ["hocsinh"] // Chỉ hiển thị cho học sinh
       },
-      // {
-      //   to: "/lich-su",
-      //   label: "Lịch sử làm bài",
-      //   icon: <IconHistory />,
-      //   accent: "amber",
-      // },
     ],
   },
 
