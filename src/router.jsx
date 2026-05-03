@@ -15,6 +15,8 @@ import Home from "./pages/Home";
 import TaiKhoanCuaToi from "./pages/Admin/TaiKhoanCuaToi";
 import Classes from "./pages/Admin/Classes";
 import BaiGiang from "./pages/Admin/Classes/BaiGiang";
+import BoSuuTap from "./pages/HocSinh/BoSuuTap";
+import LamBai from "./pages/HocSinh/LamBai";
 
 const SCROLL_THRESHOLD = 80;
 
@@ -97,6 +99,8 @@ const router = createBrowserRouter([
             path: "lop-hoc/bai-giang/:classId/:className",
             element: <BaiGiang />,
           },
+          { path: "hoc-sinh/bo-suu-tap", element: <BoSuuTap /> },
+          { path: "hoc-sinh/lam-bai/:id", element: <LamBai /> },
           { path: "mon-hoc", element: <div>Trang quản lý môn học</div> },
           { path: "lich-su", element: <div>Trang xem lịch sử làm bài</div> },
           { path: "403", element: <ForbiddenPage /> },

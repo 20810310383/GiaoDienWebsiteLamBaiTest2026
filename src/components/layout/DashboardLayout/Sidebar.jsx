@@ -67,6 +67,19 @@ const IconHistory = () => (
   </svg>
 );
 
+const IconCollection = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+  </svg>
+);
+
 const IconShield = () => (
   <svg
     viewBox="0 0 24 24"
@@ -127,6 +140,13 @@ const NAV_ITEMS = [
     items: [
       //   { to: "/mon-hoc", label: "Môn học", icon: <IconBook />, accent: "cyan" },
       { to: "/lop-hoc", label: "Lớp học", icon: <IconUsers />, accent: "pink" },
+      { 
+        to: "/hoc-sinh/bo-suu-tap", 
+        label: "Bộ sưu tập", 
+        icon: <IconCollection />, 
+        accent: "violet",
+        roles: ["hocsinh"] // Chỉ hiển thị cho học sinh
+      },
       {
         to: "/lich-su",
         label: "Lịch sử làm bài",
@@ -227,6 +247,10 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
               <span className={styles.groupLabel}>{group.group}</span>
               <ul className={styles.navList}>
                 {group.items.map((item) => {
+                  // Kiểm tra role nếu có yêu cầu
+                  if (item.roles && !item.roles.includes(user?.role)) {
+                    return null;
+                  }
                   const active = isActive(item.to, item.exact);
                   return (
                     <li key={item.to}>

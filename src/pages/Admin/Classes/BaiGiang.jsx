@@ -71,6 +71,7 @@ import {
 } from "../../../services/apiBaiGiang";
 import { uploadAPI } from "../../../services/uploadAPI";
 import { getPublicUrl } from "../../../utils/formatURL";
+import baiGiangThuongMaiAPI from "../../../services/baiGiangThuongMaiAPI";
 
 const { TextArea } = Input;
 const TINYMCE_API_KEY = "zjpcag3mx26mkofp78l7t8bmqyehvp1yqtapi5t9smj030pj";
@@ -735,9 +736,45 @@ const BaiGiang = () => {
               {/* Footer */}
               <div className={styles.cardFooter}>
                 {isHocSinh ? (
-                  <button className={styles.studyBtn} onClick={() => message.info("Tính năng đang phát triển")}>
-                    <Play size={16} />
-                    Vào Học
+                  <button
+                    className={styles.studyBtn}
+                    onClick={async () => {
+                      const gia = baiGiang.giaBaiGiang || 0;
+
+                      if (gia > 0) {
+                        // Có phí -> kiểm tra số dư trước
+                        if (!user?.soDu || user.soDu < gia) {
+                          message.error(`Số dư không đủ! Cần ${gia.toLocaleString()}đ, bạn chỉ có ${(user?.soDu || 0).toLocaleString()}đ`);
+                          return;
+                        }
+
+                        try {
+                          await baiGiangThuongMaiAPI.muaBaiGiang(baiGiang._id, token);
+                          message.success("Đã thêm vào bộ sưu tập!");
+                        } catch (error) {
+                          if (error.response?.data?.message?.includes("đã mua")) {
+                            message.warning("Bài giảng này đã có trong bộ sưu tập!");
+                          } else {
+                            message.error(error.response?.data?.message || "Mua thất bại");
+                          }
+                        }
+                      } else {
+                        // Miễn phí -> mua luôn không cần kiểm tra số dư
+                        try {
+                          await baiGiangThuongMaiAPI.muaBaiGiang(baiGiang._id, token);
+                          message.success("Đã thêm vào bộ sưu tập!");
+                        } catch (error) {
+                          if (error.response?.data?.message?.includes("đã mua")) {
+                            message.warning("Bài giảng này đã có trong bộ sưu tập!");
+                          } else {
+                            message.error(error.response?.data?.message || "Mua thất bại");
+                          }
+                        }
+                      }
+                    }}
+                  >
+                    <Plus size={16} />
+                    Thêm vào Bộ Sưu Tập
                   </button>
                 ) : (
                   <>
