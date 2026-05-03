@@ -1,0 +1,448 @@
+.container {
+  padding: 24px;
+  animation: fadeIn 0.3s ease;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #f8f9ff 0%, #ffffff 100%);
+  min-height: 100vh;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0;
+  background: linear-gradient(135deg, #1a1a2e 0%, #667eea 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  color: #8c8c8c;
+  margin: 4px 0 0 0;
+  font-size: 14px;
+}
+
+/* Stats Row */
+.statsRow {
+  margin-bottom: 16px;
+}
+
+.statsRow :global(.ant-col) {
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+}
+
+.statCard {
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  height: 100%;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.statCard:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.statCard :global(.ant-statistic-title) {
+  color: #8c8c8c;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.statCard :global(.ant-statistic-content) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statCard :global(.ant-statistic-content-value) {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* Filter Card */
+.filterCard {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border: none;
+  overflow: hidden;
+}
+
+.filterCard :global(.ant-card-body) {
+  padding: 16px 20px;
+}
+
+.totalCount {
+  color: #8c8c8c;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Table Card */
+.tableCard {
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: none;
+  overflow: hidden;
+}
+
+.tableCard :global(.ant-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tableCard :global(.ant-table-thead > tr > th) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+}
+
+.tableCard :global(.ant-table-tbody > tr:hover > td) {
+  background: #f6f8ff;
+}
+
+/* User Cell */
+.userCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.userName {
+  font-weight: 600;
+  color: #1a1a2e;
+  font-size: 14px;
+}
+
+.userCode {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+/* Modal Title */
+.modalTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+/* Role Description */
+.roleDescription {
+  background: #f5f5f5;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.roleDescription h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #1a1a2e;
+}
+
+.roleDescription ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.roleDescription li {
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: #666;
+}
+
+/* Tablet */
+@media (max-width: 992px) {
+  .container {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .statsRow :global(.ant-col) {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .container {
+    padding: 12px;
+    overflow-x: hidden;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+
+  .statsRow :global(.ant-col) {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+
+  .statsRow :global(.ant-col:nth-child(3)),
+  .statsRow :global(.ant-col:nth-child(4)) {
+    margin-top: 8px;
+  }
+
+  .statCard :global(.ant-statistic-title) {
+    font-size: 11px;
+  }
+
+  .statCard :global(.ant-statistic-content-value) {
+    font-size: 18px !important;
+  }
+
+  .filterCard :global(.ant-card-body) {
+    padding: 12px;
+  }
+
+  .totalCount {
+    justify-content: flex-start;
+    margin-top: 8px;
+    font-size: 12px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 576px) {
+  .container {
+    padding: 8px;
+    overflow-x: hidden !important;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .subtitle {
+    font-size: 11px;
+  }
+
+  .header {
+    margin-bottom: 12px;
+    gap: 8px;
+  }
+
+  /* Stats - 2 columns on mobile */
+  .statsRow {
+    margin-bottom: 12px;
+    margin-left: -4px;
+    margin-right: -4px;
+  }
+
+  .statsRow :global(.ant-row) {
+    margin-left: -4px !important;
+    margin-right: -4px !important;
+  }
+
+  .statsRow :global(.ant-col) {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+    margin-bottom: 8px;
+  }
+
+  .statCard :global(.ant-card-body) {
+    padding: 8px 6px;
+  }
+
+  .statCard :global(.ant-statistic) {
+    text-align: center;
+  }
+
+  .statCard :global(.ant-statistic-title) {
+    font-size: 9px;
+    margin-bottom: 2px;
+    line-height: 1.2;
+  }
+
+  .statCard :global(.ant-statistic-content-value) {
+    font-size: 14px !important;
+  }
+
+  .statCard :global(.ant-statistic-content-prefix) {
+    display: none;
+  }
+
+  /* Filter Card - full width, stacked */
+  .filterCard {
+    margin-bottom: 12px;
+  }
+
+  .filterCard :global(.ant-card-body) {
+    padding: 10px 8px;
+  }
+
+  .filterCard :global(.ant-row) {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .filterCard :global(.ant-col) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-bottom: 8px;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .filterCard :global(.ant-select),
+  .filterCard :global(.ant-input-search) {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+
+  .filterCard :global(.ant-input-affix-wrapper) {
+    min-width: unset !important;
+  }
+
+  .filterCard :global(.ant-btn) {
+    width: 100%;
+  }
+
+  .totalCount {
+    justify-content: flex-start;
+    font-size: 11px;
+    padding: 0 4px;
+  }
+
+  /* Table - force horizontal scroll */
+  .tableCard {
+    overflow: visible;
+    margin-left: -8px;
+    margin-right: -8px;
+    border-radius: 0;
+  }
+
+  .tableCard :global(.ant-card-body) {
+    padding: 0 8px 8px 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tableCard :global(.ant-table-wrapper) {
+    overflow-x: auto !important;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+  }
+
+  .tableCard :global(.ant-table) {
+    min-width: 700px !important;
+  }
+
+  .tableCard :global(.ant-table-container),
+  .tableCard :global(.ant-table-content) {
+    overflow-x: auto !important;
+  }
+
+  .tableCard :global(.ant-table-thead > tr > th),
+  .tableCard :global(.ant-table-tbody > tr > td) {
+    white-space: nowrap;
+    padding: 8px 6px;
+    font-size: 11px;
+    min-width: 70px;
+  }
+
+  .tableCard :global(.ant-table-thead > tr > th:first-child),
+  .tableCard :global(.ant-table-tbody > tr > td:first-child) {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: #fff;
+    min-width: 120px;
+  }
+
+  .tableCard :global(.ant-table-thead > tr > th:first-child) {
+    z-index: 3;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  /* Custom scrollbar for table */
+  .tableCard :global(.ant-card-body)::-webkit-scrollbar,
+  .tableCard :global(.ant-table-wrapper)::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .tableCard :global(.ant-card-body)::-webkit-scrollbar-track,
+  .tableCard :global(.ant-table-wrapper)::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  .tableCard :global(.ant-card-body)::-webkit-scrollbar-thumb,
+  .tableCard :global(.ant-table-wrapper)::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+  }
+
+  .tableCard :global(.ant-table-expanded-row > td) {
+    background: #fff;
+  }
+
+  .tableCard :global(.ant-pagination) {
+    padding: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* Modal full width on mobile */
+  :global(.ant-modal) {
+    max-width: calc(100vw - 16px) !important;
+    margin: 8px auto;
+  }
+
+  :global(.ant-modal-content) {
+    padding: 12px;
+  }
+
+  :global(.ant-modal-title) {
+    font-size: 14px !important;
+  }
+
+  :global(.ant-form-item) {
+    margin-bottom: 12px;
+  }
+}

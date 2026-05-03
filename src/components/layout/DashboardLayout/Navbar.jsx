@@ -172,9 +172,9 @@ const Navbar = ({ onToggleSidebar, sidebarOpen }) => {
               {user?.ho_ten || "Người dùng"}
             </span>
             <span className={styles.chipRole}>
-              {user?.vai_tro === "admin"
+              {user?.role === "admin"
                 ? "Quản trị viên"
-                : user?.vai_tro === "giaovien"
+                : user?.role === "giaovien"
                   ? "Giáo viên"
                   : "Học sinh"}
             </span>

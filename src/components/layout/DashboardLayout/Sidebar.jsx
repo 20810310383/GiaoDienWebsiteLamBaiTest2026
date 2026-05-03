@@ -132,32 +132,48 @@ const NAV_ITEMS = [
         label: "Trang chủ",
         icon: <IconHome />,
         exact: true,
+        roles: ["admin"],
         accent: "violet",
+      },
+    ],
+  },
+  {
+    group: "Quản trị",
+    items: [
+      {
+        to: "/admin/quan-ly-tai-khoan",
+        label: "Quản lý tài khoản",
+        icon: <IconShield />,
+        accent: "red",
+        roles: ["admin"],
+      },
+      {
+        to: "/lop-hoc",
+        label: "Quản lý lớp học",
+        icon: <IconBook />,
+        accent: "cyan",
+        roles: ["admin", "giaovien"],
+      },
+      {
+        to: "/admin/lich-su-thi",
+        label: "Lịch sử thi",
+        icon: <IconHistory />,
+        accent: "amber",
+        roles: ["admin", "giaovien"],
       },
     ],
   },
   {
     group: "Học tập",
     items: [
-      //   { to: "/mon-hoc", label: "Môn học", icon: <IconBook />, accent: "cyan" },
-      { to: "/lop-hoc", label: "Lớp học", icon: <IconUsers />, accent: "pink" },
-      { 
-        to: "/admin/lich-su-thi", 
-        label: "Lịch sử thi", 
-        icon: <IconHistory />, 
-        accent: "amber",
-        roles: ["admin", "giaovien"] // Chỉ hiển thị cho admin và giaovien
-      },
-      { 
-        to: "/hoc-sinh/bo-suu-tap", 
-        label: "Bộ sưu tập", 
-        icon: <IconCollection />, 
+      {
+        to: "/hoc-sinh/bo-suu-tap",
+        label: "Bộ sưu tập",
+        icon: <IconCollection />,
         accent: "violet",
-        roles: ["hocsinh"] // Chỉ hiển thị cho học sinh
       },
     ],
   },
-
   {
     group: "Hệ thống",
     items: [
