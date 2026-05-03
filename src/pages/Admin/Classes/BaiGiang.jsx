@@ -894,6 +894,7 @@ const BaiGiang = () => {
                 label={<span className={styles.formLabel}>Giá bài giảng (VNĐ)</span>}
               >
                 <InputNumber
+                disabled
                   min={0}
                   step={1000}
                   formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}

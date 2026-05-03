@@ -398,10 +398,10 @@ const Classes = () => {
                 {/* Body */}
                 <div className={styles.cardBody}>
                   <h3
-                    className={isManagement ? styles.cardTitle : styles.cardTitleDisabled}
+                    className={isManagement ? styles.cardTitle : ''}
                     onClick={() => isManagement && xemTrangBaiGiang(item)}
                     style={{ cursor: isManagement ? "pointer" : "default" }}
-                    title={isManagement ? "Xem bài giảng của lớp" : "Bạn cần tham gia lớp trước"}
+                    title={isManagement ? "Xem bài giảng của lớp" : ""}
                   >
                     {item.ten_lop}
                   </h3>
@@ -451,6 +451,16 @@ const Classes = () => {
                 <div className={styles.cardFooter}>
                   {isManagement ? (
                     <div className={styles.adminActions}>
+                        <Tooltip title="Xem danh sách bài giảng của lớp">
+                        <button
+                          className={styles.iconBtn}
+                          onClick={() => {
+                            xemTrangBaiGiang(item);
+                          }}
+                        >
+                          <BookOpen size={15} />
+                        </button>
+                      </Tooltip>
                       <Tooltip title="Danh sách học viên">
                         <button
                           className={styles.iconBtn}
@@ -494,7 +504,7 @@ const Classes = () => {
                       onClick={() => xemTrangBaiGiang(item)}
                     >
                       <BookOpen size={15} />
-                      Vào học ngay
+                      Vào lớp ngay
                     </button>
                   ) : isPending ? (
                     <button className={styles.pendingBtn} disabled>
@@ -510,7 +520,7 @@ const Classes = () => {
                         setIsJoinModalOpen(true);
                       }}
                     >
-                      {isFull ? "Đã đầy chỗ" : "Tham gia ngay"}
+                      {isFull ? "Đã đầy chỗ" : "Yêu cầu tham gia"}
                       {!isFull && <ChevronRight size={15} />}
                     </button>
                   )}
