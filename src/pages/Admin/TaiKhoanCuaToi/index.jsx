@@ -174,7 +174,7 @@ const TaiKhoanCuaToi = () => {
                 admin: "Quản trị viên",
                 giaovien: "Giáo viên",
                 hocsinh: "Học sinh",
-              }[user?.role].toUpperCase() || "Người dùng"}
+              }[user?.role] || "Người dùng"}
             </p>
 
             <Divider

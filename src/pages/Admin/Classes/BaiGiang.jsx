@@ -538,8 +538,6 @@ const BaiGiang = () => {
       bg.maBaiGiang?.toLowerCase().includes(searchKey.toLowerCase())
   );
 
-  console.log("baiGiangList:", baiGiangList);
-  console.log("filteredBaiGiang:", filteredBaiGiang);
 
   // Thống kê
   const totalQuestions = baiGiangList.reduce((sum, bg) => sum + (bg.soCauHoi || 0), 0);

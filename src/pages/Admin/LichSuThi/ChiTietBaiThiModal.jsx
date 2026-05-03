@@ -7,7 +7,6 @@ import {
   Tag,
   Avatar,
   Descriptions,
-  Table,
   Card,
   Divider,
   Empty,
@@ -18,8 +17,10 @@ import {
   Clock,
   Calendar,
   FileText,
-  User,
   BookOpen,
+  Lightbulb,
+  AlertCircle,
+  HelpCircle,
 } from "lucide-react";
 import styles from "./ChiTietBaiThi.module.css";
 import { getPublicUrl } from "../../../utils/formatURL";
@@ -57,79 +58,127 @@ const ChiTietBaiThiModal = ({ open, data, loading, onClose }) => {
     });
   };
 
-  // Columns cho bảng câu hỏi
-  const questionColumns = [
-    {
-      title: "#",
-      key: "index",
-      width: 50,
-      align: "center",
-      render: (_, __, index) => <strong>{index + 1}</strong>,
-    },
-    {
-      title: "Câu hỏi",
-      dataIndex: ["id_cau_hoi_obj", "noiDungCauHoi"],
-      key: "cau_hoi",
-      render: (text, record) => {
-        const cauHoi = data?.id_bai_giang?.danhSachCauHoi?.find(
-          (c) => c._id?.toString() === record.id_cau_hoi?.toString()
-        );
-        return cauHoi?.noiDungCauHoi || "Không tìm thấy câu hỏi";
-      },
-    },
-    {
-      title: "Đáp án đã chọn",
-      key: "dap_an_chon",
-      width: 150,
-      align: "center",
-      render: (_, record) => {
-        const color = record.dung_sai ? "#52c41a" : "#ff4d4f";
-        const icon = record.dung_sai ? (
-          <CheckCircle size={16} />
-        ) : (
-          <XCircle size={16} />
-        );
-        return (
+  // Render một câu hỏi chi tiết
+  const renderCauHoiChiTiet = (record, index) => {
+    const cauHoi = data?.id_bai_giang?.danhSachCauHoi?.find(
+      (c) => c._id?.toString() === record.id_cau_hoi?.toString()
+    );
+
+    if (!cauHoi) {
+      return (
+        <div key={record.id_cau_hoi?.toString()} className={styles.questionCard}>
+          <AlertCircle size={16} />
+          Không tìm thấy câu hỏi
+        </div>
+      );
+    }
+
+    const isCorrect = record.dung_sai;
+    const answers = cauHoi.cacDapAn || [];
+
+    // Chuyển đổi "A", "B", "C", "D" thành index 0, 1, 2, 3
+    const selectedIndex = ["A", "B", "C", "D"].indexOf(
+      record.dap_an_chon?.trim().toUpperCase()
+    );
+
+    return (
+      <div
+        key={record.id_cau_hoi?.toString()}
+        className={`${styles.questionCard} ${isCorrect ? styles.correct : styles.incorrect}`}
+      >
+        {/* Header: Số câu & Kết quả */}
+        <div className={styles.questionHeader}>
+          <div className={styles.questionNumber}>
+            <HelpCircle size={16} />
+            <span>Câu {index + 1}</span>
+          </div>
           <Tag
-            color={record.dap_an_chon ? color : "default"}
-            icon={record.dap_an_chon ? icon : null}
-            style={{ fontWeight: 600 }}
+            color={isCorrect ? "success" : "error"}
+            icon={isCorrect ? <CheckCircle size={12} /> : <XCircle size={12} />}
+            className={styles.resultTag}
           >
-            {record.dap_an_chon || "Chưa chọn"}
+            {isCorrect ? "Đúng" : "Sai"}
           </Tag>
-        );
-      },
-    },
-    {
-      title: "Đáp án đúng",
-      dataIndex: "dap_an_dung",
-      key: "dap_an_dung",
-      width: 120,
-      align: "center",
-      render: (text) => (
-        <Tag color="green" style={{ fontWeight: 600 }}>
-          {text}
-        </Tag>
-      ),
-    },
-    {
-      title: "Kết quả",
-      dataIndex: "dung_sai",
-      key: "dung_sai",
-      width: 100,
-      align: "center",
-      render: (dung_sai) =>
-        dung_sai ? (
-          <Tag color="success" icon={<CheckCircle size={12} />}>
-            Đúng
+        </div>
+
+        {/* Nội dung câu hỏi */}
+        <div className={styles.questionContent}>
+          <div
+            className={styles.questionText}
+            dangerouslySetInnerHTML={{ __html: cauHoi.noiDungCauHoi }}
+          />
+        </div>
+
+        {/* Các đáp án */}
+        <div className={styles.answersList}>
+          {answers.map((answer, ansIndex) => {
+            const label = String.fromCharCode(65 + ansIndex); // A, B, C, D
+            const isAnswerCorrect = answer.laDapAnDung === true;
+            const isAnswerSelected = selectedIndex === ansIndex;
+
+            let answerClass = styles.answerItem;
+            if (isAnswerSelected && isAnswerCorrect) {
+              answerClass += ` ${styles.answerSelectedCorrect}`;
+            } else if (isAnswerSelected && !isAnswerCorrect) {
+              answerClass += ` ${styles.answerSelectedWrong}`;
+            } else if (isAnswerCorrect) {
+              answerClass += ` ${styles.answerCorrect}`;
+            }
+
+            return (
+              <div key={ansIndex} className={answerClass}>
+                <span className={styles.answerLabel}>{label}.</span>
+                <span
+                  className={styles.answerText}
+                  dangerouslySetInnerHTML={{ __html: answer.noiDungDapAn }}
+                />
+                <span className={styles.answerIcons}>
+                  {isAnswerSelected && !isAnswerCorrect && (
+                    <XCircle size={18} className={styles.iconWrong} />
+                  )}
+                  {isAnswerSelected && isAnswerCorrect && (
+                    <CheckCircle size={18} className={styles.iconCorrect} />
+                  )}
+                  {!isAnswerSelected && isAnswerCorrect && (
+                    <CheckCircle size={18} className={styles.iconCorrect} />
+                  )}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Đáp án của học viên */}
+        <div className={styles.selectedAnswer}>
+          <span className={styles.selectedLabel}>Đáp án của bạn:</span>
+          <Tag
+            color={isCorrect ? "success" : "error"}
+            icon={isCorrect ? <CheckCircle size={14} /> : <XCircle size={14} />}
+          >
+            {record.dap_an_chon
+              ? `${record.dap_an_chon.toUpperCase()}. ${
+                  answers[selectedIndex]?.noiDungDapAn || ""
+                }`
+              : "Chưa chọn"}
           </Tag>
-        ) : (
-          <Tag color="error" icon={<XCircle size={12} />}>
-            Sai
-          </Tag>
-        ),
-    },
-  ];
+        </div>
+
+        {/* Giải thích (nếu có) */}
+        {cauHoi.giaiThich && (
+          <div className={styles.explanation}>
+            <div className={styles.explanationHeader}>
+              <Lightbulb size={16} />
+              <span>Giải thích</span>
+            </div>
+            <div
+              className={styles.explanationContent}
+              dangerouslySetInnerHTML={{ __html: cauHoi.giaiThich }}
+            />
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <Modal
@@ -169,6 +218,8 @@ const ChiTietBaiThiModal = ({ open, data, loading, onClose }) => {
                       <strong>{data.id_hoc_sinh?.ho_ten || "N/A"}</strong>
                       <span>@{data.id_hoc_sinh?.ma_so || "N/A"}</span>
                       <span>{data.id_hoc_sinh?.email || "N/A"}</span>
+                      <span>{data.id_hoc_sinh?.so_dien_thoai || "N/A"}</span>
+                      <span>{data.id_hoc_sinh?.ten_lop_sinh_hoat || ""}</span>
                     </div>
                   </div>
                 </Card>
@@ -246,19 +297,15 @@ const ChiTietBaiThiModal = ({ open, data, loading, onClose }) => {
                 <BookOpen size={18} />
                 Chi tiết câu hỏi
               </h3>
-              <Table
-                columns={questionColumns}
-                dataSource={data.chi_tiet_dap_an || []}
-                rowKey={(record) => record.id_cau_hoi?.toString()}
-                pagination={false}
-                size="small"
-                scroll={{ y: 400 }}
-                locale={{
-                  emptyText: (
-                    <Empty description="Không có chi tiết câu hỏi" />
-                  ),
-                }}
-              />
+              {data.chi_tiet_dap_an && data.chi_tiet_dap_an.length > 0 ? (
+                <div className={styles.questionsList}>
+                  {data.chi_tiet_dap_an.map((record, index) =>
+                    renderCauHoiChiTiet(record, index)
+                  )}
+                </div>
+              ) : (
+                <Empty description="Không có chi tiết câu hỏi" />
+              )}
             </div>
 
             {/* Nội dung bài học (nếu có) */}

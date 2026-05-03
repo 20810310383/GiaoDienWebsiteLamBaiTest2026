@@ -1,14 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Table,
   Select,
   Input,
   Button,
-  Space,
   Tag,
   Avatar,
-  Tooltip,
-  Modal,
   message,
   Row,
   Col,
@@ -16,20 +12,18 @@ import {
   Card,
   Spin,
   Empty,
+  Pagination,
 } from "antd";
 import {
   Search,
   RefreshCw,
   Eye,
-  TrendingUp,
-  Users,
   FileText,
-  Award,
   BarChart3,
-  Calendar,
   Clock,
   CheckCircle,
-  XCircle,
+  TrendingUp,
+  Users,
   AlertCircle,
 } from "lucide-react";
 import styles from "./LichSuThi.module.css";
@@ -147,14 +141,6 @@ const LichSuThi = () => {
     setPagination((prev) => ({ ...prev, current: 1 }));
   };
 
-  const handleTableChange = (newPagination) => {
-    setPagination({
-      current: newPagination.current,
-      pageSize: newPagination.pageSize,
-      total: pagination.total,
-    });
-  };
-
   const handleXemChiTiet = async (record) => {
     setChiTietModal({ open: true, data: null, loading: true });
     try {
@@ -192,7 +178,7 @@ const LichSuThi = () => {
   const renderTrangThai = (trang_thai) => {
     const config = {
       da_nop_bai: { color: "blue", text: "Đã nộp", icon: <FileText size={12} /> },
-      da_xem_dap_an: { color: "green", text: "Đã xem đáp án", icon: <Eye size={12} /> },
+      // da_xem_dap_an: { color: "green", text: "Đã xem đáp án", icon: <Eye size={12} /> },
       dang_lam: { color: "orange", text: "Đang làm", icon: <Clock size={12} /> },
     };
     const c = config[trang_thai] || config.da_nop_bai;
@@ -222,117 +208,6 @@ const LichSuThi = () => {
       minute: "2-digit",
     });
   };
-
-  // Columns
-  const columns = [
-    {
-      title: "Học viên",
-      key: "hoc_sinh",
-      width: 200,
-      fixed: "left",
-      render: (_, record) => {
-        const hs = record.id_hoc_sinh;
-        return (
-          <div className={styles.hocVienCell}>
-            <Avatar
-              src={hs?.anh_dai_dien ? getPublicUrl(hs.anh_dai_dien) : null}
-              size={36}
-              style={{ backgroundColor: "#1890ff" }}
-            >
-              {hs?.ho_ten?.charAt(0)}
-            </Avatar>
-            <div className={styles.hocVienInfo}>
-              <span className={styles.hoTen}>{hs?.ho_ten || "N/A"}</span>
-              <span className={styles.maSo}>{hs?.ma_so || "N/A"}</span>
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      title: "Lớp học",
-      key: "lop_hoc",
-      width: 150,
-      render: (_, record) => record.id_lop_hoc?.ten_lop || "-",
-      filteredValue: filterLop ? [filterLop] : null,
-    },
-    {
-      title: "Bài giảng",
-      key: "bai_giang",
-      width: 180,
-      render: (_, record) => (
-        <Tooltip title={record.id_bai_giang?.ten_bai_giang}>
-          <span className={styles.baiGiangText}>
-            {record.id_bai_giang?.ten_bai_giang || "N/A"}
-          </span>
-        </Tooltip>
-      ),
-    },
-    {
-      title: "Lần thi",
-      dataIndex: "lan_thi",
-      key: "lan_thi",
-      width: 80,
-      align: "center",
-      render: (lan) => <Tag color="purple">Lần {lan}</Tag>,
-    },
-    {
-      title: "Kết quả",
-      key: "ket_qua",
-      width: 200,
-      render: (_, record) => (
-        <div className={styles.ketQuaCell}>
-          <div className={styles.diemRow}>
-            <span className={styles.label}>Điểm:</span>
-            {renderDiem(record.diem)}
-          </div>
-          <div className={styles.soCauRow}>
-            <CheckCircle size={12} style={{ color: "#52c41a" }} />
-            <span>{record.so_cau_dung}/{record.tong_so_cau} câu đúng</span>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: "Thời gian",
-      key: "thoi_gian",
-      width: 120,
-      render: (_, record) => (
-        <Tooltip title={`Nộp lúc: ${formatNgay(record.ngay_lam_bai)}`}>
-          <div className={styles.thoiGianCell}>
-            <Clock size={14} />
-            <span>{formatThoiGian(record.thoi_gian_lam_bai)}</span>
-          </div>
-        </Tooltip>
-      ),
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "trang_thai",
-      key: "trang_thai",
-      width: 140,
-      render: renderTrangThai,
-    },
-    {
-      title: "Thao tác",
-      key: "action",
-      width: 100,
-      fixed: "right",
-      render: (_, record) => (
-        <Space>
-          <Tooltip title="Xem chi tiết">
-            <Button
-              type="primary"
-              ghost
-              size="small"
-              icon={<Eye size={14} />}
-              onClick={() => handleXemChiTiet(record)}
-            />
-          </Tooltip>
-        </Space>
-      ),
-    },
-  ];
 
   // Search handler với debounce
   const [searchTimeout, setSearchTimeout] = useState(null);
@@ -419,8 +294,8 @@ const LichSuThi = () => {
 
       {/* Bộ lọc */}
       <Card size="small" className={styles.filterCard}>
-        <Row gutter={[12, 12]} align="middle">
-          <Col xs={24} sm={12} md={8}>
+        <div className={styles.filterRow}>
+          <div className={styles.filterItemSearch}>
             <Input
               placeholder="Tìm tên, MSSV, email học viên..."
               prefix={<Search size={16} />}
@@ -428,8 +303,8 @@ const LichSuThi = () => {
               onChange={handleSearchChange}
               onPressEnter={(e) => handleSearch(e.target.value)}
             />
-          </Col>
-          <Col xs={12} sm={6} md={4}>
+          </div>
+          <div className={styles.filterItem}>
             <Select
               placeholder="Lọc theo lớp"
               allowClear
@@ -446,8 +321,8 @@ const LichSuThi = () => {
                 </Option>
               ))}
             </Select>
-          </Col>
-          <Col xs={12} sm={6} md={5}>
+          </div>
+          <div className={styles.filterItem}>
             <Select
               placeholder="Lọc theo bài giảng"
               allowClear
@@ -470,46 +345,133 @@ const LichSuThi = () => {
                 </Option>
               ))}
             </Select>
-          </Col>
-          <Col xs={24} sm={6} md={7}>
-            <div className={styles.filterInfo}>
-              <span>
-                Hiển thị <strong>{data.length}</strong> / <strong>{pagination.total}</strong> kết quả
-              </span>
-            </div>
-          </Col>
-        </Row>
+          </div>
+          <div className={styles.filterInfo}>
+            <span>
+              Hiển thị <strong>{data.length}</strong> / <strong>{pagination.total}</strong> kết quả
+            </span>
+          </div>
+        </div>
       </Card>
 
-      {/* Bảng dữ liệu */}
-      <Card className={styles.tableCard}>
-        <Table
-          columns={columns}
-          dataSource={data}
-          rowKey="_id"
-          loading={loading}
-          pagination={{
-            current: pagination.current,
-            pageSize: pagination.pageSize,
-            total: pagination.total,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            pageSizeOptions: ["10", "20", "50", "100"],
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} của ${total} bài thi`,
-          }}
-          onChange={handleTableChange}
-          scroll={{ x: 1200 }}
-          locale={{
-            emptyText: (
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="Không có dữ liệu lịch sử thi"
-              />
-            ),
-          }}
-        />
-      </Card>
+      {/* Card Grid View */}
+      <div className={styles.cardGrid}>
+        {loading ? (
+          <div className={styles.loadingContainer}>
+            <Spin size="large" />
+          </div>
+        ) : data.length === 0 ? (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description="Không có dữ liệu lịch sử thi"
+          />
+        ) : (
+          <>
+            <Row gutter={[16, 16]}>
+              {data.map((record) => (
+                <Col key={record._id} xs={24} sm={12} lg={8} xl={6}>
+                  <div className={styles.historyCard}>
+                    {/* Card Header */}
+                    <div className={styles.cardHeader}>
+                      <div className={styles.cardUser}>
+                        <Avatar
+                          src={record.id_hoc_sinh?.anh_dai_dien ? getPublicUrl(record.id_hoc_sinh.anh_dai_dien) : null}
+                          size={44}
+                          style={{ backgroundColor: "#1890ff" }}
+                        >
+                          {record.id_hoc_sinh?.ho_ten?.charAt(0)}
+                        </Avatar>
+                        <div className={styles.cardUserInfo}>
+                          <span className={styles.cardUserName}>
+                            {record.id_hoc_sinh?.ho_ten || "N/A"}
+                          </span>
+                          <span className={styles.cardUserCode}>
+                            {record.id_hoc_sinh?.ma_so || "N/A"}
+                          </span>
+                          <span className={styles.cardUserCode}>
+                            {record.id_hoc_sinh?.ten_lop_sinh_hoat || "N/A"}
+                          </span>
+                        </div>
+                      </div>
+                      {renderDiem(record.diem)}
+                    </div>
+
+                    {/* Card Body */}
+                    <div className={styles.cardBody}>
+                      <div className={styles.cardInfoItem}>
+                        <span className={styles.cardLabel}>Bài giảng</span>
+                        <span className={styles.cardValue}>
+                          {record.id_bai_giang?.ten_bai_giang || "N/A"}
+                        </span>
+                      </div>
+                      <div className={styles.cardInfoItem}>
+                        <span className={styles.cardLabel}>Lớp học</span>
+                        <span className={styles.cardValue}>
+                          {record.id_lop_hoc?.ten_lop || "-"}
+                        </span>
+                      </div>
+                      <div className={styles.cardInfoItem}>
+                        <span className={styles.cardLabel}>Lần thi</span>
+                        <span className={styles.cardValue}>Lần {record.lan_thi}</span>
+                      </div>
+                      <div className={styles.cardInfoItem}>
+                        <span className={styles.cardLabel}>Kết quả</span>
+                        <span className={styles.cardValue}>
+                          <CheckCircle size={14} style={{ color: "#52c41a", marginRight: 4 }} />
+                          {record.so_cau_dung}/{record.tong_so_cau} câu đúng
+                        </span>
+                      </div>
+                      <div className={styles.cardInfoItem}>
+                        <span className={styles.cardLabel}>Thời gian</span>
+                        <span className={styles.cardValue}>
+                          <Clock size={14} style={{ marginRight: 4, color: "#666" }} />
+                          {formatThoiGian(record.thoi_gian_lam_bai)}
+                        </span>
+                      </div>
+                      <div className={styles.cardInfoItem}>
+                        <span className={styles.cardLabel}>Ngày thi</span>
+                        <span className={styles.cardValue}>
+                          {record.ngay_lam_bai ? new Date(record.ngay_lam_bai).toLocaleDateString("vi-VN") : "-"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Card Footer */}
+                    <div className={styles.cardFooter}>
+                      {renderTrangThai(record.trang_thai)}
+                      <Button
+                        type="primary"
+                        size="small"
+                        icon={<Eye size={14} />}
+                        onClick={() => handleXemChiTiet(record)}
+                      >
+                        Chi tiết
+                      </Button>
+                    </div>
+                  </div>
+                </Col>
+              ))}
+            </Row>
+
+            {/* Pagination */}
+            {pagination.total > pagination.pageSize && (
+              <div className={styles.paginationWrapper}>
+                <Pagination
+                  current={pagination.current}
+                  pageSize={pagination.pageSize}
+                  total={pagination.total}
+                  onChange={(page, pageSize) => {
+                    setPagination({ ...pagination, current: page, pageSize });
+                  }}
+                  showSizeChanger
+                  pageSizeOptions={["8", "12", "24", "48"]}
+                  showTotal={(total) => `Tổng ${total} bài thi`}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       {/* Modal chi tiết */}
       <ChiTietBaiThiModal
