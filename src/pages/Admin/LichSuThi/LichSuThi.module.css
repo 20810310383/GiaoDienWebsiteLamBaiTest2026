@@ -1,6 +1,7 @@
 .container {
   padding: 24px;
   animation: fadeIn 0.3s ease;
+  width: 100%;
   max-width: 100%;
   overflow-x: hidden;
   box-sizing: border-box;
@@ -169,6 +170,17 @@
 /* ===== CARD GRID ===== */
 .cardGrid {
   width: 100%;
+  overflow-x: hidden;
+}
+
+.cardGrid :global(.ant-row) {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.cardGrid :global(.ant-col) {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
 }
 
 .loadingContainer {
@@ -361,6 +373,7 @@
 @media (max-width: 992px) {
   .container {
     padding: 16px;
+    overflow-x: hidden;
   }
 
   .header {
@@ -398,6 +411,10 @@
 @media (max-width: 768px) {
   .container {
     padding: 12px;
+    overflow-x: hidden;
+    margin: 0;
+    width: 100%;
+    max-width: 100vw;
   }
 
   .title {
@@ -418,12 +435,21 @@
     margin-bottom: 12px;
   }
 
+  .statsRow :global(.ant-col) {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+
+  .statCard :global(.ant-card-body) {
+    padding: 12px 10px;
+  }
+
   .statCard :global(.ant-statistic-title) {
     font-size: 11px;
   }
 
   .statCard :global(.ant-statistic-content-value) {
-    font-size: 20px !important;
+    font-size: 18px !important;
   }
 
   .statCard :global(.ant-statistic-content-prefix) {
@@ -435,13 +461,13 @@
   }
 
   .filterCard :global(.ant-card-body) {
-    padding: 14px;
+    padding: 12px;
   }
 
   .filterRow {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    gap: 10px;
   }
 
   .filterItem,
@@ -454,10 +480,17 @@
     text-align: center;
     margin-left: 0;
     margin-top: 8px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .cardGrid :global(.ant-col) {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
   }
 
   .cardHeader {
-    padding: 14px 16px;
+    padding: 12px 14px;
   }
 
   .cardUserName {
@@ -465,7 +498,7 @@
   }
 
   .cardBody {
-    padding: 14px;
+    padding: 12px 14px;
   }
 
   .cardFooter {
