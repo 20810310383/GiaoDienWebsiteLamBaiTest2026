@@ -296,7 +296,7 @@ const Classes = () => {
             <TrendingUp size={18} />
           </div>
           <div>
-            <div className={styles.statNum}>93%</div>
+            <div className={styles.statNum}>...</div>
             <div className={styles.statLabel}>Hoàn thành</div>
           </div>
         </div>

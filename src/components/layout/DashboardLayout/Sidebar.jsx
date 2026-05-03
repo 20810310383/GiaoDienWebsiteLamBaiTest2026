@@ -123,81 +123,81 @@ const IconClose = () => (
 );
 
 /* ── Nav items config ── */
-const NAV_ITEMS = [
-  {
-    group: "Tổng quan",
-    items: [
-      {
-        to: "/",
-        label: "Trang chủ",
-        icon: <IconHome />,
-        exact: true,
-        roles: ["admin"],
-        accent: "violet",
-      },
-    ],
-  },
-  {
-    group: "Quản trị",
-    items: [
-      {
-        to: "/admin/quan-ly-tai-khoan",
-        label: "Quản lý tài khoản",
-        icon: <IconShield />,
-        accent: "red",
-        roles: ["admin"],
-      },
-      {
-        to: "/lop-hoc",
-        label: "Quản lý lớp học",
-        icon: <IconBook />,
-        accent: "cyan",
-        roles: ["admin", "giaovien"],
-      },
-      {
-        to: "/admin/lich-su-thi",
-        label: "Lịch sử thi",
-        icon: <IconHistory />,
-        accent: "amber",
-        roles: ["admin", "giaovien"],
-      },
-    ],
-  },
-  {
-    group: "Học tập",
-    items: [
-      {
-        to: "/hoc-sinh/bo-suu-tap",
-        label: "Bộ sưu tập",
-        icon: <IconCollection />,
-        accent: "violet",
-      },
-    ],
-  },
-  {
-    group: "Hệ thống",
-    items: [
-      {
-        to: "/tai-khoan-cua-toi",
-        label: "Thông tin tài khoản",
-        icon: <IconUsers />,
-        accent: "blue",
-      },
-      {
-        to: "/403",
-        label: "Quyền truy cập",
-        icon: <IconShield />,
-        accent: "emerald",
-      },
-    ],
-  },
-];
 
 const Sidebar = ({ isOpen, isMobile, onClose }) => {
   const location = useLocation();
   const { isLoggedIn, user, handleLogout } = useAuth();
   const [tienDo, setTienDo] = useState({ phanTramHoanThanh: 0, tongBaiDaMua: 0 });
-
+  
+  const NAV_ITEMS = [
+    {
+      group: "Tổng quan",
+      items: [
+        {
+          to: "/",
+          label: "Trang chủ",
+          icon: <IconHome />,
+          exact: true,
+          roles: ["admin"],
+          accent: "violet",
+        },
+      ],
+    },
+    {
+      group: "Quản trị",
+      items: [
+        {
+          to: "/admin/quan-ly-tai-khoan",
+          label: "Quản lý tài khoản",
+          icon: <IconShield />,
+          accent: "red",
+          roles: ["admin"],
+        },
+        {
+          to: "/lop-hoc",
+          label: user?.role === "hocsinh" ? "Danh sách các lớp" : "Quản lý lớp học",
+          icon: <IconBook />,
+          accent: "cyan",
+          roles: ["admin", "giaovien", "hocsinh"],
+        },
+        {
+          to: "/admin/lich-su-thi",
+          label: "Lịch sử thi",
+          icon: <IconHistory />,
+          accent: "amber",
+          roles: ["admin", "giaovien"],
+        },
+      ],
+    },
+    {
+      group: "Học tập",
+      items: [
+        {
+          to: "/hoc-sinh/bo-suu-tap",
+          label: "Bộ sưu tập",
+          icon: <IconCollection />,
+          accent: "violet",
+        },
+      ],
+    },
+    {
+      group: "Hệ thống",
+      items: [
+        {
+          to: "/tai-khoan-cua-toi",
+          label: "Thông tin tài khoản",
+          icon: <IconUsers />,
+          accent: "blue",
+        },
+        {
+          to: "/403",
+          label: "Quyền truy cập",
+          icon: <IconShield />,
+          accent: "emerald",
+        },
+      ],
+    },
+  ];
   // Lấy tiến độ học tập
   useEffect(() => {
     const fetchTienDo = async () => {

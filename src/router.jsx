@@ -73,7 +73,7 @@ const router = createBrowserRouter([
           {
             path: "lop-hoc",
             element: (
-              <RoleProtectedRoute allowedRoles={["admin", "giaovien"]}>
+              <RoleProtectedRoute allowedRoles={["admin", "giaovien", "hocsinh"]}>
                 <Classes />
               </RoleProtectedRoute>
             ),
@@ -81,7 +81,7 @@ const router = createBrowserRouter([
           {
             path: "lop-hoc/bai-giang/:classId/:className",
             element: (
-              <RoleProtectedRoute allowedRoles={["admin", "giaovien"]}>
+              <RoleProtectedRoute allowedRoles={["admin", "giaovien", "hocsinh"]}>
                 <BaiGiang />
               </RoleProtectedRoute>
             ),

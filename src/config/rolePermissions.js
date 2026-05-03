@@ -69,8 +69,9 @@ const ROLE_PERMISSIONS = {
     "/": true,
     "/tai-khoan-cua-toi": true,
     
-    // Không xem được danh sách lớp (sẽ xem trong bộ sưu tập)
-    "/lop-hoc": false,
+    // Xem danh sách lớp (sẽ xem trong bộ sưu tập)
+    "/lop-hoc": true,
+    "/lop-hoc/bai-giang/:classId/:className": true,
     
     // Không tạo/chỉnh sửa bài giảng
     "/admin/tao-bai-giang": false,
