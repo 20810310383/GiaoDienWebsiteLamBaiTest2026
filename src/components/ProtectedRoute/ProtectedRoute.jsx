@@ -11,8 +11,6 @@ const ProtectedRoute = ({ allowedRoles, requiredPermission }) => {
     return <Navigate to="/" replace />;
   }
 
-  console.log("allowedRoles: ", allowedRoles);
-  console.log("user: ", user);
 
   // 1. Kiểm tra vai trò - tạm đóng
   if (allowedRoles && !allowedRoles.includes(user.role)) {

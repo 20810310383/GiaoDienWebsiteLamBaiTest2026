@@ -476,10 +476,7 @@ const BaiGiang = () => {
     try {
       const res = await getBaiGiangById(baiGiang._id, token);
       
-      // Debug
-      console.log("Full response:", res);
-      console.log("res.data:", res.data);
-      console.log("res.data keys:", res.data ? Object.keys(res.data) : "N/A");
+     
       
       const fullBaiGiang = res.data || res;
       
@@ -489,8 +486,6 @@ const BaiGiang = () => {
       }
       
       const questions = fullBaiGiang.danhSachCauHoi || [];
-      console.log("Questions:", questions);
-      console.log("First question:", questions[0]);
       
       setPreviewQuestions(questions);
       

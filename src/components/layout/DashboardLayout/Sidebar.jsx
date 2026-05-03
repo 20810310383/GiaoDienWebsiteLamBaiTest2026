@@ -138,7 +138,7 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
           label: "Trang chủ",
           icon: <IconHome />,
           exact: true,
-          roles: ["admin"],
+          roles: ["admin", "giaovien", "hocsinh"],
           accent: "violet",
         },
       ],

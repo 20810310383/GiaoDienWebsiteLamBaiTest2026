@@ -9,8 +9,6 @@ import { useAuth } from "../../contexts/AuthContext";
 const RoleProtectedRoute = ({ allowedRoles = [], children, fallbackPath = "/403" }) => {
   const { user, isLoading, token } = useAuth();
 
-  console.log("token: ", token);
-  console.log("user: ", user);
   if (isLoading) {
     return <div>Đang tải hệ thống...</div>;
   }
