@@ -216,7 +216,15 @@ const BoSuuTap = () => {
         <div className={styles.headerLeft}>
           <div className={styles.avatarSection}>
             <div className={styles.avatar}>
-              {user?.ho_ten?.charAt(0)?.toUpperCase() || "H"}
+              {user?.anh_dai_dien ? (
+                <img
+                  src={getPublicUrl(user.anh_dai_dien)}
+                  alt={user?.ho_ten || "Avatar"}
+                  className={styles.avatarImg}
+                />
+              ) : (
+                user?.ho_ten?.charAt(0)?.toUpperCase() || "H"
+              )}
             </div>
             <div className={styles.userInfo}>
               <span className={styles.eyebrow}>
