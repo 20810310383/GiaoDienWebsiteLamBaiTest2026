@@ -12,6 +12,8 @@ import {
   ArrowLeft,
   RefreshCw,
   UserSquare,
+  GraduationCap,
+  Clock,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { registerUser, xacThucOTPAndRegister } from "../../services/apiAuth";
@@ -26,12 +28,11 @@ const DangNhap = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [regData, setRegData] = useState(null);
 
-  // Các trạng thái cho bộ đếm ngược
-  const [countdown, setCountdown] = useState(300); // 5 phút xác thực
+  const [countdown, setCountdown] = useState(300);
   const [canResend, setCanResend] = useState(false);
-  const [resendTimer, setResendTimer] = useState(60); // 60s để gửi lại mã
+  const [resendTimer, setResendTimer] = useState(60);
 
-  const { handleLogin, isLoggedIn } = useAuth(); // Lấy hàm login từ Context
+  const { handleLogin, isLoggedIn } = useAuth();
   const [formLogin] = Form.useForm();
   const [formRegister] = Form.useForm();
 
@@ -43,7 +44,6 @@ const DangNhap = () => {
     }
   }, [isLoggedIn, navigate]);
 
-  // Xử lý đếm ngược OTP
   useEffect(() => {
     let timer;
     if (isVerifying && countdown > 0) {
@@ -68,7 +68,6 @@ const DangNhap = () => {
     return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
 
-  // ✅ HÀM ĐĂNG NHẬP (Fix lỗi undefined của anh ở đây)
   const onFinishLogin = async (values) => {
     setLoading(true);
     try {
@@ -76,20 +75,18 @@ const DangNhap = () => {
         taiKhoan: values.taiKhoan,
         password: values.password,
       });
-      // navigate("/");
-      window.location.href = "/"; // Reload lại trang để cập nhật trạng thái đăng nhập mới
+      window.location.href = "/";
       scrollToTop();
       message.success("Chào mừng Sếp quay trở lại!");
     } catch (err) {
       message.error(
-        err?.message || "Đăng nhập thất bại, vui lòng kiểm tra lại",
+        err?.message || "Đăng nhập thất bại, vui lòng kiểm tra lại"
       );
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ HÀM ĐĂNG KÝ BƯỚC 1 (Gửi OTP)
   const onPreRegister = async (values) => {
     setLoading(true);
     try {
@@ -108,14 +105,13 @@ const DangNhap = () => {
       message.success("Mã OTP đã được gửi đến email của bạn!");
     } catch (err) {
       message.error(
-        err?.message || "Thông tin không hợp lệ hoặc Email đã tồn tại",
+        err?.message || "Thông tin không hợp lệ hoặc Email đã tồn tại"
       );
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ HÀM XÁC THỰC OTP & ĐĂNG KÝ BƯỚC 2
   const onFinishVerify = async (values) => {
     setLoading(true);
     try {
@@ -146,12 +142,193 @@ const DangNhap = () => {
     }
   };
 
+  const handleSwitchTab = (key) => {
+    setActiveTab(key);
+    scrollToTop();
+  };
+
+  const tabItems = [
+    {
+      key: "login",
+      label: (
+        <span className={styles.tabLabel}>
+          <LogIn size={18} />
+          Đăng Nhập
+        </span>
+      ),
+      children: (
+        <Form
+          onFinish={onFinishLogin}
+          layout="vertical"
+          form={formLogin}
+          className={styles.inputField}
+        >
+          <Form.Item
+            name="taiKhoan"
+            rules={[{ required: true, message: "Nhập tài khoản!" }]}
+          >
+            <Input
+              prefix={<User size={18} />}
+              placeholder="Email hoặc Số điện thoại hoặc Mã sinh viên"
+              size="large"
+            />
+          </Form.Item>
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: "Nhập mật khẩu!" }]}
+          >
+            <Input.Password
+              prefix={<Lock size={18} />}
+              placeholder="Mật khẩu"
+              size="large"
+            />
+          </Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            block
+            loading={loading}
+            className={styles.submitBtn}
+            size="large"
+          >
+            <LogIn size={18} />
+            Truy Cập Hệ Thống
+          </Button>
+          <div className={styles.formFooter}>
+            <p>
+              Chưa có tài khoản?{" "}
+              <a onClick={() => handleSwitchTab("register")}>Đăng ký ngay</a>
+            </p>
+          </div>
+        </Form>
+      ),
+    },
+    {
+      key: "register",
+      label: (
+        <span className={styles.tabLabel}>
+          <UserPlus size={18} />
+          Đăng Ký
+        </span>
+      ),
+      children: (
+        <Form
+          onFinish={onPreRegister}
+          layout="vertical"
+          form={formRegister}
+          className={styles.inputField}
+        >
+          <Form.Item
+            name="ma_so"
+            rules={[
+              { required: true, message: "Vui lòng nhập mã sinh viên!" },
+              {
+                pattern: /^[a-zA-Z0-9]+$/,
+                message:
+                  "Mã sinh viên chỉ được chứa chữ và số (không có khoảng trắng)!",
+              },
+              { min: 4, message: "Mã sinh viên quá ngắn!" },
+            ]}
+          >
+            <Input
+              prefix={<UserSquare size={18} />}
+              placeholder="Nhập mã sinh viên (ví dụ: SV2026)"
+              maxLength={15}
+            />
+          </Form.Item>
+          <Form.Item
+            name="ho_ten"
+            validateTrigger="onBlur"
+            rules={[
+              { required: true, message: "Vui lòng nhập họ và tên!" },
+              {
+                whitespace: true,
+                message: "Họ tên không được chỉ chứa khoảng trắng!",
+              },
+              {
+                pattern:
+                  /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂẾưăạảấầẩẫậắằẳẵặẹẻẽềềểế]+(?:\s+[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂẾưăạảấầẩẫậắằẳẵặẹẻẽềềểế]+)+$/,
+                message:
+                  "Họ và tên phải có ít nhất 2 từ, chỉ chứa chữ cái và khoảng trắng!",
+              },
+              { max: 50, message: "Họ tên quá dài (tối đa 50 ký tự)!" },
+            ]}
+          >
+            <Input
+              prefix={<User size={18} />}
+              placeholder="Ví dụ: Nguyễn Văn A"
+              style={{ textTransform: "capitalize" }}
+            />
+          </Form.Item>
+          <Form.Item
+            name="email"
+            rules={[
+              { required: true, type: "email", message: "Email không hợp lệ!" },
+            ]}
+          >
+            <Input prefix={<Mail size={18} />} placeholder="Email nhận mã OTP" />
+          </Form.Item>
+          <Form.Item
+            name="so_dien_thoai"
+            rules={[
+              { required: true, message: "Vui lòng nhập số điện thoại!" },
+              {
+                pattern: /^(0[3|5|7|8|9])[0-9]{8}$/,
+                message:
+                  "Số điện thoại không đúng định dạng (10 số, đầu 03, 05, 07, 08, 09)!",
+              },
+            ]}
+          >
+            <Input
+              prefix={<Phone size={18} />}
+              placeholder="Ví dụ: 0987654321"
+              maxLength={10}
+            />
+          </Form.Item>
+          <Form.Item
+            name="mat_khau"
+            rules={[
+              { required: true, min: 6, message: "Tối thiểu 6 ký tự!" },
+            ]}
+          >
+            <Input.Password prefix={<Lock size={18} />} placeholder="Mật khẩu" />
+          </Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            block
+            loading={loading}
+            className={styles.submitBtn}
+            size="large"
+          >
+            <UserPlus size={18} />
+            Tiếp Tục Xác Thực
+          </Button>
+          <div className={styles.formFooter}>
+            <p>
+              Đã có tài khoản?{" "}
+              <a onClick={() => handleSwitchTab("login")}>Đăng nhập ngay</a>
+            </p>
+          </div>
+        </Form>
+      ),
+    },
+  ];
+
   return (
     <div className={styles.authContainer}>
       <SecurityWrapper />
+      
+      {/* Floating decorative shapes */}
+      <div className={`${styles.floatingShape} ${styles.shape1}`} />
+      <div className={`${styles.floatingShape} ${styles.shape2}`} />
+      <div className={`${styles.floatingShape} ${styles.shape3}`} />
+      <div className={`${styles.floatingShape} ${styles.shape4}`} />
+
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
         className={styles.authCard}
       >
         <AnimatePresence mode="wait">
@@ -160,216 +337,34 @@ const DangNhap = () => {
               key="auth-main"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0, x: -50 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
             >
-              <div className={styles.titleArea}>
-                <h2
-                  style={{
-                    fontFamily:
-                      "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
-                  }}
-                >
-                  HỆ THỐNG
-                </h2>
-                <p>
-                  {activeTab === "login"
-                    ? "Vui lòng đăng nhập để tiếp tục"
-                    : "Tạo tài khoản mới ngay hôm nay"}
-                </p>
+              {/* Header with gradient */}
+              <div className={styles.authHeader}>
+                <div className={styles.authHeaderContent}>
+                  <div className={styles.logoWrapper}>
+                    <GraduationCap size={36} className={styles.logoIcon} />
+                  </div>
+                  <h1>HỆ THỐNG BÀI TRẮC NGHIỆM</h1>
+                  <p>
+                    {activeTab === "login"
+                      ? "Đăng nhập để truy cập tài khoản của bạn"
+                      : "Tạo tài khoản mới để bắt đầu học tập"}
+                  </p>
+                </div>
               </div>
 
-              <Tabs
-                activeKey={activeTab}
-                onChange={setActiveTab}
-                centered
-                className={styles.customTabs}
-                items={[
-                  {
-                    key: "login",
-                    label: (
-                      <span>
-                        <LogIn size={18} /> ĐĂNG NHẬP
-                      </span>
-                    ),
-                    children: (
-                      <Form
-                        onFinish={onFinishLogin}
-                        layout="vertical"
-                        form={formLogin}
-                        className={styles.inputField}
-                      >
-                        <Form.Item
-                          name="taiKhoan"
-                          rules={[
-                            { required: true, message: "Nhập tài khoản!" },
-                          ]}
-                        >
-                          <Input
-                            prefix={<User size={18} />}
-                            placeholder="Email hoặc Số điện thoại hoặc Mã sinh viên"
-                            size="large"
-                          />
-                        </Form.Item>
-                        <Form.Item
-                          name="password"
-                          rules={[
-                            { required: true, message: "Nhập mật khẩu!" },
-                          ]}
-                        >
-                          <Input.Password
-                            prefix={<Lock size={18} />}
-                            placeholder="Mật khẩu"
-                            size="large"
-                          />
-                        </Form.Item>
-                        <Button
-                          type="primary"
-                          htmlType="submit"
-                          block
-                          loading={loading}
-                          className={styles.submitBtn}
-                        >
-                          TRUY CẬP HỆ THỐNG
-                        </Button>
-                      </Form>
-                    ),
-                  },
-                  {
-                    key: "register",
-                    label: (
-                      <span>
-                        <UserPlus size={18} /> ĐĂNG KÝ
-                      </span>
-                    ),
-                    children: (
-                      <Form
-                        onFinish={onPreRegister}
-                        layout="vertical"
-                        form={formRegister}
-                        className={styles.inputField}
-                      >
-                        <Form.Item
-                          name="ma_so"
-                          rules={[
-                            {
-                              required: true,
-                              message: "Vui lòng nhập mã sinh viên!",
-                            },
-                            {
-                              pattern: /^[a-zA-Z0-9]+$/,
-                              message:
-                                "Mã sinh viên chỉ được chứa chữ và số (không có khoảng trắng)!",
-                            },
-                            {
-                              min: 4,
-                              message: "Mã sinh viên quá ngắn!",
-                            },
-                          ]}
-                        >
-                          <Input
-                            prefix={<UserSquare size={18} />}
-                            placeholder="Nhập mã sinh viên (ví dụ: SV2026)"
-                            maxLength={15} // Khóa không cho nhập quá dài (tùy quy định trường ông)
-                            style={{ borderRadius: "var(--radius-md)" }}
-                          />
-                        </Form.Item>
-                        <Form.Item
-                          name="ho_ten"
-                          validateTrigger="onBlur" // Validate khi user thoát khỏi ô input cho đỡ khó chịu
-                          rules={[
-                            {
-                              required: true,
-                              message: "Vui lòng nhập họ và tên!",
-                            },
-                            {
-                              whitespace: true,
-                              message:
-                                "Họ tên không được chỉ chứa khoảng trắng!",
-                            },
-                            {
-                              // Regex đã sửa lỗi range và bắt buộc có khoảng trắng ở giữa để tách ít nhất 2 từ
-                              pattern:
-                                /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂẾưăạảấầẩẫậắằẳẵặẹẻẽềềểế]+(?:\s+[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂẾưăạảấầẩẫậắằẳẵặẹẻẽềềểế]+)+$/,
-                              message:
-                                "Họ và tên phải có ít nhất 2 từ, chỉ chứa chữ cái và khoảng trắng!",
-                            },
-                            {
-                              max: 50,
-                              message: "Họ tên quá dài (tối đa 50 ký tự)!",
-                            },
-                          ]}
-                        >
-                          <Input
-                            prefix={<User size={18} />}
-                            placeholder="Ví dụ: Nguyễn Văn A"
-                            // Tự động viết hoa chữ cái đầu cho đẹp dữ liệu (Optional)
-                            style={{ textTransform: "capitalize" }}
-                          />
-                        </Form.Item>
-                        <Form.Item
-                          name="email"
-                          rules={[
-                            {
-                              required: true,
-                              type: "email",
-                              message: "Email không hợp lệ!",
-                            },
-                          ]}
-                        >
-                          <Input
-                            prefix={<Mail size={18} />}
-                            placeholder="Email nhận mã OTP"
-                          />
-                        </Form.Item>
-                        <Form.Item
-                          name="so_dien_thoai"
-                          rules={[
-                            {
-                              required: true,
-                              message: "Vui lòng nhập số điện thoại!",
-                            },
-                            {
-                              pattern: /^(0[3|5|7|8|9])[0-9]{8}$/,
-                              message:
-                                "Số điện thoại không đúng định dạng (10 số, đầu 03, 05, 07, 08, 09)!",
-                            },
-                          ]}
-                        >
-                          <Input
-                            prefix={<Phone size={18} />}
-                            placeholder="Ví dụ: 0987654321"
-                            maxLength={10} // Khóa luôn không cho nhập quá 10 ký tự
-                          />
-                        </Form.Item>
-                        <Form.Item
-                          name="mat_khau"
-                          rules={[
-                            {
-                              required: true,
-                              min: 6,
-                              message: "Tối thiểu 6 ký tự!",
-                            },
-                          ]}
-                        >
-                          <Input.Password
-                            prefix={<Lock size={18} />}
-                            placeholder="Mật khẩu"
-                          />
-                        </Form.Item>
-                        <Button
-                          type="primary"
-                          htmlType="submit"
-                          block
-                          loading={loading}
-                          className={styles.submitBtn}
-                        >
-                          TIẾP TỤC XÁC THỰC
-                        </Button>
-                      </Form>
-                    ),
-                  },
-                ]}
-              />
+              {/* Body with tabs */}
+              <div className={styles.authBody}>
+                <Tabs
+                  activeKey={activeTab}
+                  onChange={handleSwitchTab}
+                  centered
+                  className={styles.customTabs}
+                  items={tabItems}
+                />
+              </div>
             </motion.div>
           ) : (
             <motion.div
@@ -377,68 +372,106 @@ const DangNhap = () => {
               initial={{ x: 50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -50, opacity: 0 }}
-              className={styles.otpSection}
+              transition={{ duration: 0.3 }}
             >
-              <button
-                className={styles.backBtn}
-                onClick={() => setIsVerifying(false)}
-              >
-                <ArrowLeft size={18} /> Quay lại
-              </button>
-
-              <div className={styles.otpHeader}>
-                <div className={styles.shieldWrapper}>
-                  <ShieldCheck size={40} className={styles.shieldIcon} />
+              {/* Header */}
+              <div className={styles.authHeader}>
+                <div className={styles.authHeaderContent}>
+                  <div className={styles.logoWrapper}>
+                    <GraduationCap size={36} className={styles.logoIcon} />
+                  </div>
+                  <h1>XÁC THỰC TÀI KHOẢN</h1>
+                  <p>Hoàn tất đăng ký bằng mã OTP</p>
                 </div>
-                <h3>Xác thực OTP</h3>
-                <p>
-                  Chúng tôi đã gửi mã đến <strong>{regData?.email}</strong>
-                </p>
-                <div className={styles.mainTimer}>{formatTime(countdown)}</div>
               </div>
 
-              <Form
-                onFinish={onFinishVerify}
-                layout="vertical"
-                className={styles.inputField}
-              >
-                <Form.Item
-                  name="otp"
-                  rules={[{ required: true, len: 6, message: "Nhập đủ 6 số!" }]}
-                >
-                  <Input
-                    placeholder="Nhập OTP để xác thực"
-                    maxLength={6}
-                    className={styles.otpInput}
-                  />
-                </Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  block
-                  loading={loading}
-                  className={styles.submitBtn}
-                  disabled={countdown === 0}
-                >
-                  XÁC NHẬN & HOÀN TẤT
-                </Button>
-                <div className={styles.resendArea}>
-                  {canResend ? (
+              {/* OTP Body */}
+              <div className={styles.authBody}>
+                <div className={styles.otpSection}>
+                  <button
+                    className={styles.backBtn}
+                    onClick={() => setIsVerifying(false)}
+                  >
+                    <ArrowLeft size={18} />
+                    Quay lại
+                  </button>
+
+                  <div className={styles.otpHeader}>
+                    <div className={styles.otpIconWrapper}>
+                      <ShieldCheck size={48} className={styles.otpIcon} />
+                    </div>
+                    <h3>Xác Thực OTP</h3>
+                    <p>
+                      Chúng tôi đã gửi mã đến{" "}
+                      <strong>{regData?.email}</strong>
+                    </p>
+                  </div>
+
+                  <div className={styles.timerWrapper}>
+                    <Clock size={20} className={styles.timerIcon} />
+                    <div>
+                      <div className={styles.timerDisplay}>
+                        {formatTime(countdown)}
+                      </div>
+                      <div className={styles.timerLabel}>Thời gian còn lại</div>
+                    </div>
+                  </div>
+
+                  <Form
+                    onFinish={onFinishVerify}
+                    layout="vertical"
+                    className={styles.inputField}
+                  >
+                    <div className={styles.otpInputWrapper}>
+                      <Form.Item
+                        name="otp"
+                        rules={[
+                          { required: true, len: 6, message: "Nhập đủ 6 số!" },
+                        ]}
+                      >
+                        <Input
+                          placeholder="● ● ● ● ● ●"
+                          maxLength={6}
+                          className={styles.otpInput}
+                        />
+                      </Form.Item>
+                    </div>
+
                     <Button
-                      type="link"
-                      onClick={handleResend}
-                      icon={<RefreshCw size={14} />}
-                      className={styles.resendBtnActive}
+                      type="primary"
+                      htmlType="submit"
+                      block
+                      loading={loading}
+                      className={styles.submitBtn}
+                      size="large"
+                      disabled={countdown === 0}
                     >
-                      Gửi lại mã ngay
+                      <ShieldCheck size={18} />
+                      Xác Nhận & Hoàn Tất
                     </Button>
-                  ) : (
-                    <span>
-                      Gửi lại mã sau <strong>{resendTimer}s</strong>
-                    </span>
-                  )}
+
+                    <div className={styles.resendArea}>
+                      {canResend ? (
+                        <Button
+                          type="link"
+                          onClick={handleResend}
+                          icon={<RefreshCw size={16} />}
+                          className={styles.resendBtnActive}
+                        >
+                          Gửi lại mã ngay
+                        </Button>
+                      ) : (
+                        <span>
+                          Gửi lại mã sau{" "}
+                          <strong style={{ color: "var(--accent-primary)" }}>
+                            {resendTimer}s
+                          </strong>
+                        </span>
+                      )}
+                    </div>
+                  </Form>
                 </div>
-              </Form>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
