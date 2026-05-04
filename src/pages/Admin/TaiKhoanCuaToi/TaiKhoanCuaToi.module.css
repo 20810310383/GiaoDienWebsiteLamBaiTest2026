@@ -1,214 +1,576 @@
+/* =========================================
+   TÀI KHOẢN CỦA TÔI — Modern Card Design
+   ========================================= */
+
 .container {
-  padding: 10px 24px;
-  max-width: 1100px;
+  padding: 24px;
+  max-width: 1200px;
   margin: 0 auto;
+  animation: fadeInUp 0.4s ease-out;
 }
 
-/* Tiêu đề trang */
-.headerTitle {
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Header ─── */
+.headerSection {
   margin-bottom: 32px;
 }
 
-.headerTitle h2 {
-  font-size: 28px;
-  font-weight: 800;
-  background: linear-gradient(to right, var(--accent), #34d399);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 8px;
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
-.headerTitle p {
-  color: var(--text-sub);
-  font-size: 15px;
-}
-
-/* Layout chính: Sử dụng Grid linh hoạt */
-.mainContent {
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 32px;
-  align-items: start;
-}
-
-/* Card chung */
-.glassCard {
-  background: var(--sidebar-bg);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  padding: 32px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-/* Avatar Card */
-.avatarSection {
-  text-align: center;
-  position: sticky;
-  top: 24px;
-}
-
-.avatarContainer {
-  position: relative;
-  display: inline-block;
-  margin-bottom: 20px;
-}
-
-.avatarImg {
-  border: 4px solid var(--bg-main);
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
-}
-
-.uploadCircle {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  background: #059669;
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
+.headerIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: var(--grad-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
+  box-shadow: 0 8px 24px rgba(24, 95, 165, 0.25);
+}
+
+.headerIcon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.headerText h1 {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+  letter-spacing: -0.5px;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.headerText p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.headerStats {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.statChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  transition: all var(--duration-fast) ease;
+}
+
+.statChip:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent-violet);
+}
+
+.statChip .icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.statChip .icon.blue {
+  background: rgba(24, 95, 165, 0.1);
+  color: var(--accent-violet);
+}
+
+.statChip .icon.green {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.statChip .icon.amber {
+  background: rgba(180, 83, 9, 0.1);
+  color: var(--accent-amber);
+}
+
+.statChip strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* ─── Main Grid ─── */
+.mainGrid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+/* ─── Profile Card (Left) ─── */
+.profileCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  overflow: hidden;
+  position: sticky;
+  top: 24px;
+  box-shadow: 0 4px 20px rgba(24, 95, 165, 0.06);
+}
+
+.profileHeader {
+  background: var(--grad-primary);
+  padding: 32px 24px;
+  text-align: center;
+  position: relative;
+}
+
+.profileHeader::after {
+  content: "";
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: var(--bg-surface);
+  border-radius: 50% 50% 0 0;
+}
+
+.avatarWrapper {
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+}
+
+.avatarCircle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 5px solid white;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44px;
+  font-weight: 700;
+  color: white;
+  margin: 0 auto;
+}
+
+.avatarCircle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.uploadBtn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-violet);
   cursor: pointer;
-  border: 4px solid var(--sidebar-bg);
-  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all var(--duration-fast) var(--ease-spring);
 }
 
-.uploadCircle:hover {
-  transform: scale(1.1) rotate(15deg);
-  background: #059669;
+.uploadBtn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* Form Styles: Xóa bỏ nền đen đặc */
-.formSection {
+.profileBody {
+  padding: 32px 24px 24px;
+  text-align: center;
+}
+
+.profileName {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.profileRole {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  background: rgba(24, 95, 165, 0.08);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-violet);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.profileInfo {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px dashed var(--border-subtle);
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  font-size: 14px;
+}
+
+.infoRow:not(:last-child) {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.infoLabel {
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.infoLabel svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+}
+
+.infoValue {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.infoValue.active {
+  color: #10b981;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.statusBadge::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.9); }
+}
+
+/* ─── Forms Section (Right) ─── */
+.formsSection {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-.sectionHeading {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--text-main);
-  margin-bottom: 24px;
+.formCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 4px 20px rgba(24, 95, 165, 0.04);
+  transition: all var(--duration-fast) ease;
+}
+
+.formCard:hover {
+  box-shadow: 0 8px 30px rgba(24, 95, 165, 0.08);
+}
+
+.formHeader {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-.sectionHeading i {
-  color: var(--accent);
-}
-
-.customForm :global(.ant-form-item-label > label) {
-  color: var(--text-sub) !important;
-  font-weight: 500;
-  font-size: 13px;
-}
-
-.customForm :global(.ant-input-affix-wrapper),
-.customForm :global(.ant-input-password) {
-  background: rgba(255, 255, 255, 0.02) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 12px !important;
-  padding: 12px 16px !important;
-}
-
-.customForm :global(.ant-input) {
-  background: transparent !important;
-  color: var(--text-main) !important;
-}
-
-.customForm :global(.ant-input-prefix) {
-  color: var(--text-sub) !important;
-  margin-right: 12px;
-}
-
-/* Nút bấm Lưu */
-/* ─── Nút Hành Động Cập Nhật ────────────────────────────────────── */
-.actionBtn {
-  height: 52px !important; /* Tăng nhẹ độ cao nhìn cho chắc chắn */
-  border-radius: var(--radius-md) !important; /* Dùng biến để đồng bộ bo góc */
-
-  /* 🟢 Thay đổi Gradient sang tone xanh biển chuyên nghiệp */
-  background: linear-gradient(
-    135deg,
-    var(--accent-violet) 0%,
-    var(--accent-cyan) 100%
-  ) !important;
-
-  border: none !important;
-  font-weight: 700 !important;
-  font-family: var(--font-display);
-  letter-spacing: 0.5px;
-  color: #ffffff !important;
-
-  /* 🟢 Đổ bóng mềm mại hơn, khớp với màu xanh chủ đạo */
-  box-shadow: 0 8px 24px rgba(24, 95, 165, 0.25) !important;
-
-  margin-top: 12px;
-  cursor: pointer;
-  transition: all var(--duration-mid) var(--ease-spring) !important;
-
+.formIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.formIcon.blue {
+  background: rgba(24, 95, 165, 0.1);
+  color: var(--accent-violet);
+}
+
+.formIcon.green {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.formIcon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.formTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.formSubtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 2px 0 0 0;
+}
+
+/* ─── Custom Form Styles ─── */
+.customForm :global(.ant-form-item) {
+  margin-bottom: 20px;
+}
+
+.customForm :global(.ant-form-item-label > label) {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary) !important;
+}
+
+.customForm :global(.ant-input),
+.customForm :global(.ant-input-affix-wrapper),
+.customForm :global(.ant-input-password) {
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  font-size: 14px;
+  border-color: var(--border-subtle) !important;
+  background: var(--bg-surface) !important;
+  transition: all var(--duration-fast) ease !important;
+}
+
+.customForm :global(.ant-input:hover),
+.customForm :global(.ant-input-affix-wrapper:hover),
+.customForm :global(.ant-input-password:hover) {
+  border-color: var(--accent-violet) !important;
+}
+
+.customForm :global(.ant-input:focus),
+.customForm :global(.ant-input-affix-wrapper-focused),
+.customForm :global(.ant-input-password-focused) {
+  border-color: var(--accent-violet) !important;
+  box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.1) !important;
+}
+
+.customForm :global(.ant-input-prefix) {
+  color: var(--text-muted);
+  margin-right: 10px;
+}
+
+.customForm :global(.ant-input[disabled]),
+.customForm :global(.ant-input-affix-wrapper-disabled) {
+  background: var(--bg-card) !important;
+  color: var(--text-secondary) !important;
+}
+
+.customForm :global(.ant-input::placeholder),
+.customForm :global(.ant-input-password input::placeholder) {
+  color: var(--text-muted) !important;
+}
+
+.customForm :global(.ant-input-textarea textarea) {
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  font-size: 14px;
+  resize: none;
+}
+
+.customForm :global(.ant-input-textarea textarea:hover) {
+  border-color: var(--accent-violet) !important;
+}
+
+.customForm :global(.ant-input-textarea textarea:focus) {
+  border-color: var(--accent-violet) !important;
+  box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.1) !important;
+}
+
+/* ─── Action Button ─── */
+.actionBtn {
+  height: 48px !important;
+  padding: 0 28px !important;
+  border-radius: 14px !important;
+  background: var(--grad-primary) !important;
+  border: none !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  letter-spacing: 0.5px;
+  color: white !important;
+  box-shadow: 0 6px 20px rgba(24, 95, 165, 0.3) !important;
+  transition: all var(--duration-mid) var(--ease-spring) !important;
+  display: inline-flex !important;
+  align-items: center;
   gap: 8px;
 }
 
 .actionBtn:hover {
-  /* 🟢 Hiệu ứng bay lên nhẹ và tỏa sáng (glow) */
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 12px 30px rgba(24, 95, 165, 0.4) !important;
-  filter: brightness(1.1); /* Làm nút sáng lên một chút khi di chuột */
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 28px rgba(24, 95, 165, 0.4) !important;
+  filter: brightness(1.08);
 }
 
 .actionBtn:active {
-  transform: translateY(-1px) scale(0.98); /* Hiệu ứng nhấn nút */
+  transform: translateY(0) !important;
 }
 
-/* 🔴 Lưu ý: Nếu ông dùng Ant Design, hãy đảm bảo icon bên trong có màu trắng */
 .actionBtn :global(.anticon) {
   font-size: 18px;
-  color: #fff;
+  color: white;
 }
 
-/* Responsive */
-@media (max-width: 992px) {
-  .mainContent {
+.actionWrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--border-subtle);
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 1024px) {
+  .mainGrid {
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 900px) {
+  .mainGrid {
     grid-template-columns: 1fr;
   }
-  .avatarSection {
+
+  .profileCard {
     position: relative;
     top: 0;
   }
+
+  .headerStats {
+    flex-wrap: wrap;
+  }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 768px) {
   .container {
-    padding: 24px 16px;
+    padding: 16px;
   }
-  .glassCard {
-    padding: 24px 20px;
+
+  .headerTop {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
-}
-/* Ép màu Placeholder cho Input thường và Input Password */
-.customForm :global(.ant-input::placeholder),
-.customForm :global(.ant-input-password input::placeholder) {
-  color: var(--text-sub) !important; /* Dùng biến màu phụ của anh */
-  opacity: 0.7 !important; /* Cho mờ nhẹ để tinh tế hơn */
+
+  .headerText h1 {
+    font-size: 22px;
+  }
+
+  .headerStats {
+    gap: 10px;
+  }
+
+  .statChip {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .statChip .icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .formCard {
+    padding: 20px;
+  }
+
+  .formHeader {
+    gap: 12px;
+  }
+
+  .formIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .formTitle {
+    font-size: 16px;
+  }
 }
 
-/* Đảm bảo khi gõ chữ, màu chữ chính luôn rõ nét */
-.customForm :global(.ant-input),
-.customForm :global(.ant-input-password input) {
-  color: var(--text-main) !important;
+@media (max-width: 480px) {
+  .headerStats {
+    display: none;
+  }
+
+  .avatarCircle {
+    width: 100px;
+    height: 100px;
+    font-size: 36px;
+  }
+
+  .profileName {
+    font-size: 18px;
+  }
+
+  .actionBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .actionWrapper {
+    padding-top: 16px;
+  }
 }
 
-/* Hiệu ứng focus cho các ô nhập liệu */
-.customForm :global(.ant-input-affix-wrapper-focused) {
-  border-color: var(--accent) !important;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1) !important;
+/* ─── Upload Loading Spinner ─── */
+.loading-spinner-small {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

@@ -4,11 +4,10 @@ import {
   Input,
   Button,
   Avatar,
-  message,
   Upload,
-  Divider,
   Row,
   Col,
+  message,
 } from "antd";
 import {
   User,
@@ -21,8 +20,11 @@ import {
   Save,
   BookOpen,
   Hash,
+  BadgeCheck,
+  Calendar,
+  IdCard,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import styles from "./TaiKhoanCuaToi.module.css";
 import { useAuth } from "../../../contexts/AuthContext";
 import { capNhatThongTin, doiMatKhau } from "../../../services/apiAuth";
@@ -62,7 +64,7 @@ const TaiKhoanCuaToi = () => {
       const newAvatarUrl = res.url || res.data.url;
       await capNhatThongTin({ anh_dai_dien: newAvatarUrl }, token);
       setUser({ ...user, anh_dai_dien: newAvatarUrl });
-      message.success("Cập nhật ảnh đại diện thành công ✨");
+      message.success("Cập nhật ảnh đại diện thành công");
     } catch (error) {
       message.error("Lỗi khi upload ảnh");
     } finally {
@@ -96,186 +98,215 @@ const TaiKhoanCuaToi = () => {
     }
   };
 
+  const getRoleDisplay = (role) => {
+    const roles = {
+      admin: "Quản trị viên",
+      giaovien: "Giáo viên",
+      hocsinh: "Học sinh",
+    };
+    return roles[role] || "Người dùng";
+  };
+
+  const getRoleIcon = (role) => {
+    switch (role) {
+      case "admin":
+        return <ShieldCheck size={14} />;
+      case "giaovien":
+        return <BadgeCheck size={14} />;
+      default:
+        return <User size={14} />;
+    }
+  };
+
   return (
     <div className={styles.container}>
-      <div className={styles.headerTitle}>
-        <motion.h2
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-        >
-          Hồ sơ cá nhân
-        </motion.h2>
-        <motion.p
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-        >
-          Quản lý thông tin định danh và bảo mật tài khoản của bạn tại hệ thống
-        </motion.p>
-      </div>
+      {/* Header */}
+      <motion.div
+        className={styles.headerSection}
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
+        <div className={styles.headerTop}>
+          <div className={styles.headerIcon}>
+            <User />
+          </div>
+          <div className={styles.headerText}>
+            <h1>Hồ sơ cá nhân</h1>
+            <p>Quản lý thông tin định danh và bảo mật tài khoản</p>
+          </div>
+        </div>
 
-      <div className={styles.mainContent}>
-        {/* CỘT TRÁI: AVATAR CARD */}
+        <div className={styles.headerStats}>
+          <div className={styles.statChip}>
+            <div className={`${styles.icon} ${styles.blue}`}>
+              <IdCard size={16} />
+            </div>
+            <span>
+              Mã SV/GV: <strong>{user?.ma_so || "—"}</strong>
+            </span>
+          </div>
+          <div className={styles.statChip}>
+            <div className={`${styles.icon} ${styles.green}`}>
+              <CheckCircle size={16} />
+            </div>
+            <span>
+              Trạng thái: <strong className={styles.active}>Hoạt động</strong>
+            </span>
+          </div>
+          <div className={styles.statChip}>
+            <div className={`${styles.icon} ${styles.amber}`}>
+              <Calendar size={16} />
+            </div>
+            <span>
+              Ngày tham gia: <strong>{user?.createdAt ? new Date(user.createdAt).toLocaleDateString("vi-VN") : "—"}</strong>
+            </span>
+          </div>
+        </div>
+      </motion.div>
+
+      <div className={styles.mainGrid}>
+        {/* Profile Card (Left) */}
         <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className={`${styles.glassCard} styles.avatarSection`}
+          className={styles.profileCard}
+          initial={{ x: -30, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
         >
-          <div className={styles.avatarSection}>
-            <div className={styles.avatarContainer}>
-              <Avatar
-                size={160}
-                src={getPublicUrl(user?.anh_dai_dien)}
-                className={styles.avatarImg}
-                style={{
-                  backgroundColor: "var(--bg-surface)",
-                  fontSize: "60px",
-                }}
-              >
-                {user?.ho_ten
-                  ?.trim()
-                  .split(/\s+/)
-                  .at(-1)
-                  .charAt(0)
-                  .toUpperCase()}
-              </Avatar>
+          <div className={styles.profileHeader}>
+            <div className={styles.avatarWrapper}>
+              <div className={styles.avatarCircle}>
+                {user?.anh_dai_dien ? (
+                  <img
+                    src={getPublicUrl(user.anh_dai_dien)}
+                    alt="Avatar"
+                  />
+                ) : (
+                  user?.ho_ten?.charAt(0).toUpperCase() || "?"
+                )}
+              </div>
               <Upload
                 customRequest={handleUploadAvatar}
                 showUploadList={false}
                 accept="image/*"
               >
-                <div className={styles.uploadCircle}>
+                <button className={styles.uploadBtn} disabled={uploading}>
                   {uploading ? (
-                    <div className="loading-spinner-small" />
+                    <div className={styles.loadingSpinner} />
                   ) : (
-                    <Camera size={20} />
+                    <Camera size={18} />
                   )}
-                </div>
+                </button>
               </Upload>
             </div>
-            <h3
-              style={{
-                color: "var(--text-main)",
-                fontSize: "20px",
-                marginBottom: "4px",
-              }}
-            >
-              {user?.ho_ten}
-            </h3>
-            <p
-              style={{
-                color: "var(--accent)",
-                fontWeight: "600",
-                fontSize: "10px",
-                letterSpacing: "1px",
-              }}
-            >
-              {{
-                admin: "Quản trị viên",
-                giaovien: "Giáo viên",
-                hocsinh: "Học sinh",
-              }[user?.role] || "Người dùng"}
-            </p>
+          </div>
 
-            <Divider
-              style={{ borderColor: "var(--border)", margin: "24px 0" }}
-            />
+          <div className={styles.profileBody}>
+            <h3 className={styles.profileName}>{user?.ho_ten || "Người dùng"}</h3>
+            <div className={styles.profileRole}>
+              {getRoleIcon(user?.role)}
+              {getRoleDisplay(user?.role)}
+            </div>
 
-            <div
-              style={{
-                textAlign: "left",
-                fontSize: "14px",
-                color: "var(--text-sub)",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: "12px",
-                }}
-              >
-                <span>Mã người dùng:</span>
-                <b style={{ color: "var(--text-main)" }}>{user?.ma_so}</b>
+            <div className={styles.profileInfo}>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>
+                  <Hash /> Mã số
+                </span>
+                <span className={styles.infoValue}>{user?.ma_so || "—"}</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span>Trạng thái:</span>
-                <b style={{ color: "#10b981" }}>Hoạt động</b>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>
+                  <Mail /> Email
+                </span>
+                <span className={styles.infoValue}>{user?.email || "—"}</span>
+              </div>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>
+                  <Phone /> Điện thoại
+                </span>
+                <span className={styles.infoValue}>{user?.so_dien_thoai || "Chưa cập nhật"}</span>
+              </div>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>
+                  <BookOpen /> Lớp
+                </span>
+                <span className={styles.infoValue}>{user?.ten_lop_sinh_hoat || "Chưa cập nhật"}</span>
+              </div>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>
+                  <CheckCircle /> Trạng thái
+                </span>
+                <span className={`${styles.infoValue} ${styles.active}`}>
+                  <span className={styles.statusBadge}>Hoạt động</span>
+                </span>
               </div>
             </div>
           </div>
         </motion.div>
 
-        {/* CỘT PHẢI: FORMS SECTION */}
-        <div className={styles.formSection}>
+        {/* Forms Section (Right) */}
+        <div className={styles.formsSection}>
           {/* Form Thông tin */}
           <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className={styles.glassCard}
+            className={styles.formCard}
+            initial={{ x: 30, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
           >
-            <div className={styles.sectionHeading}>
-              <User size={20} /> THÔNG TIN ĐỊNH DANH
+            <div className={styles.formHeader}>
+              <div className={`${styles.formIcon} ${styles.blue}`}>
+                <User size={22} />
+              </div>
+              <div>
+                <h3 className={styles.formTitle}>Thông tin định danh</h3>
+                <p className={styles.formSubtitle}>Cập nhật thông tin cá nhân của bạn</p>
+              </div>
             </div>
+
             <Form
               form={formInfo}
               layout="vertical"
               onFinish={onUpdateInfo}
               className={styles.customForm}
             >
-              <Row gutter={20}>
-                {/* MÃ SỐ (MSSV / MGV) */}
+              <Row gutter={[16, 8]}>
                 <Col xs={24} sm={12}>
                   <Form.Item
                     name="ma_so"
                     label="Mã số định danh (MSSV/MGV)"
-                    rules={[
-                      { required: true, message: "Vui lòng nhập mã số!" },
-                    ]}
+                    rules={[{ required: true, message: "Vui lòng nhập mã số!" }]}
                   >
                     <Input
                       prefix={<Hash size={18} />}
                       placeholder="Ví dụ: SV123456"
-                      readOnly={user?.role !== "admin"}
+                      // readOnly={user?.role !== "admin"}
+                      readOnly
                     />
                   </Form.Item>
                 </Col>
 
-                {/* HỌ TÊN */}
                 <Col xs={24} sm={12}>
                   <Form.Item
                     name="ho_ten"
                     label="Họ và tên"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Không được để trống họ tên!",
-                      },
-                    ]}
+                    rules={[{ required: true, message: "Không được để trống họ tên!" }]}
                   >
-                    <Input
-                      prefix={<User size={18} />}
-                      placeholder="Nhập họ và tên"
-                    />
+                    <Input prefix={<User size={18} />} placeholder="Nhập họ và tên" />
                   </Form.Item>
                 </Col>
 
-                {/* EMAIL */}
                 <Col xs={24} sm={12}>
                   <Form.Item
                     name="email"
                     label="Địa chỉ Email"
-                    rules={[
-                      { type: "email", message: "Email không đúng định dạng!" },
-                    ]}
+                    rules={[{ type: "email", message: "Email không đúng định dạng!" }]}
                     required
                   >
                     <Input prefix={<Mail size={18} />} readOnly />
                   </Form.Item>
                 </Col>
 
-                {/* SỐ ĐIỆN THOẠI */}
                 <Col xs={24} sm={12}>
                   <Form.Item
                     name="so_dien_thoai"
@@ -286,14 +317,14 @@ const TaiKhoanCuaToi = () => {
                     ]}
                   >
                     <Input
-                      readOnly={user?.role !== "admin"}
+                      // readOnly={user?.role !== "admin"}
+                      readOnly
                       prefix={<Phone size={18} />}
                       placeholder="Nhập số điện thoại"
                     />
                   </Form.Item>
                 </Col>
 
-                {/* TÊN LỚP SINH HOẠT */}
                 <Col xs={24} sm={12}>
                   <Form.Item name="ten_lop_sinh_hoat" label="Lớp sinh hoạt">
                     <Input
@@ -303,29 +334,27 @@ const TaiKhoanCuaToi = () => {
                   </Form.Item>
                 </Col>
 
-                {/* VAI TRÒ (Chỉ hiển thị để xem) */}
                 <Col xs={24} sm={12}>
                   <Form.Item name="role" label="Vai trò hệ thống">
                     <Input
                       prefix={<ShieldCheck size={18} />}
                       disabled
-                      style={{ textTransform: "capitalize" }}
+                      value={getRoleDisplay(user?.role)}
                     />
                   </Form.Item>
                 </Col>
 
-                {/* GIỚI THIỆU BẢN THÂN */}
                 <Col xs={24}>
                   <Form.Item name="gioiThieu" label="Giới thiệu bản thân">
                     <Input.TextArea
-                      rows={4}
+                      rows={3}
                       placeholder="Chia sẻ một chút về bản thân bạn..."
-                      style={{ borderRadius: "var(--radius-md)" }}
                     />
                   </Form.Item>
                 </Col>
               </Row>
-              <div style={{ textAlign: "right", marginTop: "12px" }}>
+
+              <div className={styles.actionWrapper}>
                 <Button
                   type="primary"
                   htmlType="submit"
@@ -333,7 +362,7 @@ const TaiKhoanCuaToi = () => {
                   loading={loadingInfo}
                   className={styles.actionBtn}
                 >
-                  LƯU THÔNG TIN CÁ NHÂN
+                  Lưu thông tin
                 </Button>
               </div>
             </Form>
@@ -341,14 +370,21 @@ const TaiKhoanCuaToi = () => {
 
           {/* Form Mật khẩu */}
           <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className={styles.glassCard}
+            className={styles.formCard}
+            initial={{ x: 30, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
           >
-            <div className={styles.sectionHeading}>
-              <ShieldCheck size={20} /> BẢO MẬT & MẬT KHẨU
+            <div className={styles.formHeader}>
+              <div className={`${styles.formIcon} ${styles.green}`}>
+                <ShieldCheck size={22} />
+              </div>
+              <div>
+                <h3 className={styles.formTitle}>Bảo mật & Mật khẩu</h3>
+                <p className={styles.formSubtitle}>Thay đổi mật khẩu để bảo vệ tài khoản</p>
+              </div>
             </div>
+
             <Form
               form={formPass}
               layout="vertical"
@@ -358,19 +394,23 @@ const TaiKhoanCuaToi = () => {
               <Form.Item
                 name="matKhauCu"
                 label="Xác nhận mật khẩu cũ"
-                rules={[{ required: true }]}
+                rules={[{ required: true, message: "Vui lòng nhập mật khẩu cũ!" }]}
               >
                 <Input.Password
                   prefix={<Lock size={18} />}
                   placeholder="Nhập mật khẩu hiện tại"
                 />
               </Form.Item>
-              <Row gutter={20}>
+
+              <Row gutter={[16, 8]}>
                 <Col xs={24} sm={12}>
                   <Form.Item
                     name="matKhauMoi"
                     label="Thiết lập mật khẩu mới"
-                    rules={[{ required: true, min: 6 }]}
+                    rules={[
+                      { required: true, message: "Vui lòng nhập mật khẩu mới!" },
+                      { min: 6, message: "Mật khẩu tối thiểu 6 ký tự!" },
+                    ]}
                   >
                     <Input.Password
                       prefix={<Lock size={18} />}
@@ -378,20 +418,20 @@ const TaiKhoanCuaToi = () => {
                     />
                   </Form.Item>
                 </Col>
+
                 <Col xs={24} sm={12}>
                   <Form.Item
                     name="confirm"
                     label="Nhập lại mật khẩu mới"
                     dependencies={["matKhauMoi"]}
                     rules={[
-                      { required: true },
+                      { required: true, message: "Vui lòng xác nhận mật khẩu!" },
                       ({ getFieldValue }) => ({
                         validator(_, value) {
-                          if (!value || getFieldValue("matKhauMoi") === value)
+                          if (!value || getFieldValue("matKhauMoi") === value) {
                             return Promise.resolve();
-                          return Promise.reject(
-                            new Error("Mật khẩu xác nhận không khớp!"),
-                          );
+                          }
+                          return Promise.reject(new Error("Mật khẩu xác nhận không khớp!"));
                         },
                       }),
                     ]}
@@ -403,7 +443,8 @@ const TaiKhoanCuaToi = () => {
                   </Form.Item>
                 </Col>
               </Row>
-              <div style={{ textAlign: "right", marginTop: "12px" }}>
+
+              <div className={styles.actionWrapper}>
                 <Button
                   type="primary"
                   htmlType="submit"
@@ -411,7 +452,7 @@ const TaiKhoanCuaToi = () => {
                   loading={loadingPass}
                   className={styles.actionBtn}
                 >
-                  CẬP NHẬT MẬT KHẨU MỚI
+                  Cập nhật mật khẩu
                 </Button>
               </div>
             </Form>

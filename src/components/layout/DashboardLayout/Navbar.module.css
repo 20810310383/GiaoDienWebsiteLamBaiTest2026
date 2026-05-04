@@ -256,6 +256,19 @@
   transition: opacity 0.3s ease;
 }
 
+/* ─── Responsive Ticker ─── */
+@media (max-width: 900px) {
+  .tickerWrap {
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .tickerWrap {
+    display: none;
+  }
+}
+
 /* ─── Date Chip với icon ─── */
 .dateChip {
   display: flex;

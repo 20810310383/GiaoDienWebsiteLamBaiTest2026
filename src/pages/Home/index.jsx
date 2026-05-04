@@ -8,6 +8,7 @@ import { getUserStats } from "../../services/apiQuanLyNguoiDung";
 import { getAllLopHoc } from "../../services/apiLopHoc";
 import { getThongKeBaiGiang } from "../../services/apiBaiGiang";
 import { getDanhSach, getThongKe } from "../../services/apiLichSuThi";
+import { getPublicUrl } from "../../utils/formatURL";
 
 // Icons
 const IconBook = () => (
@@ -148,15 +149,8 @@ const Home = () => {
   const roleInfo = roleLabels[role] || roleLabels.hocsinh;
   const userName = user?.ho_ten || user?.name || user?.username || "Bạn";
   const firstName = userName.split(" ").pop() || userName;
+  const avatar = user?.anh_dai_dien || user?.avatar_url || user?.avatar_path || "https://ui-avatars.com/api/?name=" + userName;
 
-
-
-  // Format date helper
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN", { day: "numeric", month: "short" });
-  };
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -175,7 +169,11 @@ const Home = () => {
         <div className={styles.welcomeCard}>
           <div className={styles.avatarContainer}>
             <div className={styles.avatar}>
-              {userName.charAt(0).toUpperCase()}
+              {user?.anh_dai_dien ? (
+                <img src={getPublicUrl(user?.anh_dai_dien)} alt="Avatar" className={styles.avatarImg} />
+              ) : (
+                <span className={styles.avatarText}>{userName.charAt(0).toUpperCase()}</span>
+              )}
             </div>
             <div className={styles.avatarRing} />
             <div className={styles.onlineBadge} />
