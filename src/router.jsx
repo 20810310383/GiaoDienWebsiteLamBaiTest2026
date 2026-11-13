@@ -69,6 +69,15 @@ const router = createBrowserRouter([
             ),
           },
 
+          {
+            path: "admin/phan-quyen",
+            element: (
+              <RoleProtectedRoute allowedRoles={["admin"]}>
+                <QuanLyTaiKhoan />
+              </RoleProtectedRoute>
+            ),
+          },
+
           // ================== ADMIN & GIAO VIEN ==================
           {
             path: "lop-hoc",

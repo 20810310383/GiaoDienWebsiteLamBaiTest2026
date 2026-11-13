@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   BookOpen, 
@@ -23,15 +23,16 @@ import {
   ChevronLeft,
   ChevronFirst,
   ChevronLast,
-  Filter
+  Filter,
+  Columns3,
+  Columns4,
+  RefreshCw
 } from "lucide-react";
-import { message, Drawer } from "antd";
+import { message, Drawer, Pagination } from "antd";
 import styles from "./BoSuuTap.module.css";
 import baiGiangThuongMaiAPI from "../../../services/baiGiangThuongMaiAPI";
 import { useAuth } from "../../../contexts/AuthContext";
 import { getPublicUrl } from "../../../utils/formatURL";
-
-const PAGE_SIZE = 10;
 
 const BoSuuTap = () => {
   const navigate = useNavigate();
@@ -42,16 +43,30 @@ const BoSuuTap = () => {
   const [collectionPage, setCollectionPage] = useState(1);
   const [collectionTotal, setCollectionTotal] = useState(0);
   const [collectionSearch, setCollectionSearch] = useState("");
+  const [collectionQuery, setCollectionQuery] = useState("");
+  const [collectionCount, setCollectionCount] = useState(0);
+  const [collectionLoading, setCollectionLoading] = useState(true);
+  const [collectionError, setCollectionError] = useState(false);
+  const collectionRequest = useRef(0);
 
   // History state
   const [lichSuThi, setLichSuThi] = useState([]);
   const [historyPage, setHistoryPage] = useState(1);
   const [historyTotal, setHistoryTotal] = useState(0);
   const [historySearch, setHistorySearch] = useState("");
+  const [historyQuery, setHistoryQuery] = useState("");
+  const [historyCount, setHistoryCount] = useState(0);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyError, setHistoryError] = useState(false);
+  const historyRequest = useRef(0);
+  const [columns, setColumns] = useState(3);
+  const [rowsPerPage, setRowsPerPage] = useState(2);
+  const pageSize = columns * rowsPerPage;
 
   // UI state
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("collection");
+  const loading = activeTab === "collection" ? collectionLoading : historyLoading;
+  const loadError = activeTab === "collection" ? collectionError : historyError;
   const [previewModal, setPreviewModal] = useState(null);
   const [previewBaiGiang, setPreviewBaiGiang] = useState(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
@@ -84,74 +99,89 @@ const BoSuuTap = () => {
 
   // Fetch collection with pagination & search
   const fetchDanhSachDaMua = useCallback(async () => {
+    const request = ++collectionRequest.current;
     try {
-      setLoading(true);
+      setCollectionLoading(true);
+      setCollectionError(false);
       const res = await baiGiangThuongMaiAPI.getDanhSachDaMua(token, {
         page: collectionPage,
-        limit: PAGE_SIZE,
-        search: collectionSearch
+        limit: pageSize,
+        search: collectionQuery
       });
+      if (request !== collectionRequest.current) return;
       if (res.success) {
         setDanhSachDaMua(res.data?.items || []);
         setCollectionTotal(res.data?.pagination?.total || 0);
+        setCollectionCount(res.data?.summary?.total ?? res.data?.pagination?.total ?? 0);
+        setCollectionPage(res.data.pagination.page);
+      } else {
+        throw new Error("Không thể tải bộ sưu tập");
       }
     } catch (error) {
+      if (request !== collectionRequest.current) return;
+      setCollectionError(true);
       console.error("Lỗi lấy danh sách đã mua:", error);
     } finally {
-      setLoading(false);
+      if (request === collectionRequest.current) setCollectionLoading(false);
     }
-  }, [token, collectionPage, collectionSearch]);
+  }, [token, collectionPage, collectionQuery, pageSize]);
 
   // Fetch history with pagination & search
   const fetchLichSuThi = useCallback(async () => {
+    const request = ++historyRequest.current;
     try {
-      setLoading(true);
+      setHistoryLoading(true);
+      setHistoryError(false);
       const res = await baiGiangThuongMaiAPI.getLichSuThi(token, {
         page: historyPage,
-        limit: PAGE_SIZE,
-        search: historySearch
+        limit: pageSize,
+        search: historyQuery
       });
+      if (request !== historyRequest.current) return;
       if (res.success) {
         setLichSuThi(res.data?.items || []);
         setHistoryTotal(res.data?.pagination?.total || 0);
+        setHistoryCount(res.data?.summary?.total ?? res.data?.pagination?.total ?? 0);
+        setHistoryPage(res.data.pagination.page);
+      } else {
+        throw new Error("Không thể tải lịch sử thi");
       }
     } catch (error) {
+      if (request !== historyRequest.current) return;
+      setHistoryError(true);
       console.error("Lỗi lấy lịch sử thi:", error);
     } finally {
-      setLoading(false);
+      if (request === historyRequest.current) setHistoryLoading(false);
     }
-  }, [token, historyPage, historySearch]);
+  }, [token, historyPage, historyQuery, pageSize]);
 
   // Initial load
   useEffect(() => {
-    if (user) {
+    if (token) {
       fetchDanhSachDaMua();
     }
-  }, [user, fetchDanhSachDaMua]);
+    return () => { collectionRequest.current += 1; };
+  }, [token, fetchDanhSachDaMua]);
 
   // Tab change
   useEffect(() => {
-    
-    fetchLichSuThi();
-  }, [activeTab, fetchLichSuThi]);
+    if (token) fetchLichSuThi();
+    return () => { historyRequest.current += 1; };
+  }, [token, fetchLichSuThi]);
 
   // Search debounce
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (activeTab === "collection") {
-        setCollectionPage(1);
-        fetchDanhSachDaMua();
-      }
+      setCollectionPage(1);
+      setCollectionQuery(collectionSearch.trim());
     }, 300);
     return () => clearTimeout(timer);
   }, [collectionSearch]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (activeTab === "history") {
-        setHistoryPage(1);
-        fetchLichSuThi();
-      }
+      setHistoryPage(1);
+      setHistoryQuery(historySearch.trim());
     }, 300);
     return () => clearTimeout(timer);
   }, [historySearch]);
@@ -200,15 +230,18 @@ const BoSuuTap = () => {
 
   // Thống kê
   const thongKe = {
-    soBaiDaMua: collectionTotal,
-    soLanThi: historyTotal
+    soBaiDaMua: collectionCount,
+    soLanThi: historyCount
   };
 
-  const totalCollectionPages = Math.ceil(collectionTotal / PAGE_SIZE);
-  const totalHistoryPages = Math.ceil(historyTotal / PAGE_SIZE);
+  const currentPage = activeTab === "collection" ? collectionPage : historyPage;
+  const currentTotal = activeTab === "collection" ? collectionTotal : historyTotal;
+  const firstItem = currentTotal ? (currentPage - 1) * pageSize + 1 : 0;
+  const lastItem = Math.min(currentPage * pageSize, currentTotal);
+  const refreshList = activeTab === "collection" ? fetchDanhSachDaMua : fetchLichSuThi;
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} style={{ "--collection-columns": columns }}>
       <div className={styles.meshBg} />
 
       {/* Header */}
@@ -240,17 +273,7 @@ const BoSuuTap = () => {
         </div>
         
         <div className={styles.headerRight}>
-          {user?.soDu !== undefined && (
-            <div className={styles.soDuCard}>
-              <div className={styles.soDuIcon}>
-                <Star size={20} />
-              </div>
-              <div className={styles.soDuInfo}>
-                <span className={styles.soDuLabel}>Số dư</span>
-                <span className={styles.soDuValue}>{user.soDu.toLocaleString()}</span>
-              </div>
-            </div>
-          )}
+          <button className={styles.exploreButton} onClick={() => navigate("/lop-hoc")}><BookOpen size={17} />Khám phá lớp học<ChevronRight size={16} /></button>
         </div>
       </div>
 
@@ -262,7 +285,7 @@ const BoSuuTap = () => {
           </div>
           <div className={styles.statContent}>
             <span className={styles.statNum}>{thongKe.soBaiDaMua}</span>
-            <span className={styles.statLabel}>Bài đã mua</span>
+            <span className={styles.statLabel}>Bài trong bộ sưu tập</span>
           </div>
         </div>
 
@@ -286,7 +309,7 @@ const BoSuuTap = () => {
           >
             <BookOpen size={18} />
             Bộ sưu tập
-            <span className={styles.tabBadge}>{collectionTotal}</span>
+            <span className={styles.tabBadge}>{collectionCount}</span>
           </button>
           <button 
             className={`${styles.tab} ${activeTab === "history" ? styles.tabActive : ""}`}
@@ -294,7 +317,7 @@ const BoSuuTap = () => {
           >
             <Clock size={18} />
             Lịch sử thi
-            <span className={styles.tabBadge}>{historyTotal}</span>
+            <span className={styles.tabBadge}>{historyCount}</span>
           </button>
         </div>
       </div>
@@ -305,6 +328,7 @@ const BoSuuTap = () => {
           <Search size={18} className={styles.searchIcon} />
           <input
             type="text"
+            aria-label={activeTab === "collection" ? "Tìm bài giảng trong bộ sưu tập" : "Tìm lịch sử thi"}
             placeholder={activeTab === "collection" ? "Tìm kiếm bài giảng..." : "Tìm kiếm lịch sử thi..."}
             value={activeTab === "collection" ? collectionSearch : historySearch}
             onChange={(e) => {
@@ -317,7 +341,22 @@ const BoSuuTap = () => {
             className={styles.searchInput}
           />
         </div>
+        <div className={styles.viewControls}>
+          {activeTab === "collection" && <div className={styles.columnControl} role="group" aria-label="Số card mỗi hàng">
+            {[3, 4].map(value => {
+              const Icon = value === 3 ? Columns3 : Columns4;
+              return <button key={value} aria-pressed={columns === value} onClick={() => { setColumns(value); setCollectionPage(1); setHistoryPage(1); }}><Icon size={16} />{value} cột</button>;
+            })}
+          </div>}
+          <label className={styles.limitControl}>Mỗi trang
+            <select value={rowsPerPage} onChange={event => { setRowsPerPage(Number(event.target.value)); setCollectionPage(1); setHistoryPage(1); }}>
+              {[2, 3, 4].map(rows => <option key={rows} value={rows}>{rows * columns} {activeTab === "collection" ? "bài" : "lượt"}</option>)}
+            </select>
+          </label>
+          <button className={styles.refreshButton} onClick={refreshList} disabled={loading} aria-label="Tải lại danh sách"><RefreshCw size={17} /></button>
+        </div>
       </div>
+      <div className={styles.listSummary} aria-live="polite"><strong>{activeTab === "collection" ? "Bài giảng của bạn" : "Các lần làm bài"}</strong><span>{loading ? "Đang tải…" : loadError ? "Chưa thể tải dữ liệu" : `${firstItem}–${lastItem} trong ${currentTotal} ${activeTab === "collection" ? "bài giảng" : "lượt thi"}`}</span></div>
 
       {/* Content */}
       <div className={styles.content}>
@@ -326,14 +365,17 @@ const BoSuuTap = () => {
             <div className={styles.spinner}></div>
             <p>Đang tải dữ liệu...</p>
           </div>
+        ) : loadError ? (
+          <div className={styles.emptyState} role="alert"><AlertCircle size={36} /><h3>Chưa thể tải danh sách</h3><p>Vui lòng thử lại sau.</p><button className={styles.btnLamBai} onClick={refreshList}>Thử lại</button></div>
         ) : activeTab === "collection" ? (
           danhSachDaMua.length === 0 ? (
             <div className={styles.emptyState}>
               <div className={styles.emptyIcon}>
                 <BookOpen size={48} />
               </div>
-              <h3>Bộ sưu tập trống</h3>
-              <p>Bạn chưa mua bài giảng nào. Hãy khám phá và mua bài giảng để bắt đầu học tập!</p>
+              <h3>{collectionQuery ? "Không tìm thấy bài giảng phù hợp" : "Bộ sưu tập đang chờ bạn khám phá"}</h3>
+              <p>{collectionQuery ? "Thử tìm theo tên bài hoặc tên lớp khác." : "Thêm bài giảng miễn phí từ lớp học để bắt đầu hành trình học tập."}</p>
+              <button className={styles.btnLamBai} onClick={() => collectionQuery ? setCollectionSearch("") : navigate("/lop-hoc")}>{collectionQuery ? "Xóa tìm kiếm" : "Khám phá lớp học"}</button>
             </div>
           ) : (
             <>
@@ -351,6 +393,8 @@ const BoSuuTap = () => {
                           src={getPublicUrl(item.id_bai_giang.anhDaiDien)} 
                           alt={item.id_bai_giang.ten_bai_giang}
                           className={styles.coverImg}
+                          loading="lazy"
+                          decoding="async"
                         />
                       ) : (
                         <div className={styles.coverPlaceholder}>
@@ -365,7 +409,7 @@ const BoSuuTap = () => {
                         </span>
                         <span className={`${styles.statusTag} ${styles[item.trang_thai]}`}>
                           {item.trang_thai === 'da_hoan_thanh' ? 'Hoàn thành' : 
-                           item.trang_thai === 'dang_hoc' ? 'Đang học' : 'Đã mua'}
+                           item.trang_thai === 'dang_hoc' ? 'Đang học' : 'Đã lưu'}
                         </span>
                       </div>
                     </div>
@@ -390,6 +434,7 @@ const BoSuuTap = () => {
                       <div className={styles.cardFooter}>
                         <button 
                           className={styles.btnXem}
+                          disabled={!item.id_bai_giang?._id}
                           onClick={() => xemPreview(item.id_bai_giang?._id)}
                         >
                           <Eye size={16} />
@@ -397,6 +442,7 @@ const BoSuuTap = () => {
                         </button>
                         <button 
                           className={styles.btnLamBai}
+                          disabled={!item.id_bai_giang?._id}
                           onClick={() => batDauLamBai(item.id_bai_giang?._id)}
                         >
                           <Play size={16} />
@@ -408,64 +454,6 @@ const BoSuuTap = () => {
                 ))}
               </div>
 
-              {/* Pagination */}
-              {totalCollectionPages > 1 && (
-                <div className={styles.pagination}>
-                  <button 
-                    className={styles.pageBtn}
-                    onClick={() => setCollectionPage(1)}
-                    disabled={collectionPage === 1}
-                  >
-                    <ChevronFirst size={18} />
-                  </button>
-                  <button 
-                    className={styles.pageBtn}
-                    onClick={() => setCollectionPage(p => Math.max(1, p - 1))}
-                    disabled={collectionPage === 1}
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-                  
-                  <div className={styles.pageNumbers}>
-                    {Array.from({ length: Math.min(5, totalCollectionPages) }, (_, i) => {
-                      let pageNum;
-                      if (totalCollectionPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (collectionPage <= 3) {
-                        pageNum = i + 1;
-                      } else if (collectionPage >= totalCollectionPages - 2) {
-                        pageNum = totalCollectionPages - 4 + i;
-                      } else {
-                        pageNum = collectionPage - 2 + i;
-                      }
-                      return (
-                        <button
-                          key={pageNum}
-                          className={`${styles.pageNum} ${collectionPage === pageNum ? styles.pageNumActive : ""}`}
-                          onClick={() => setCollectionPage(pageNum)}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <button 
-                    className={styles.pageBtn}
-                    onClick={() => setCollectionPage(p => Math.min(totalCollectionPages, p + 1))}
-                    disabled={collectionPage === totalCollectionPages}
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                  <button 
-                    className={styles.pageBtn}
-                    onClick={() => setCollectionPage(totalCollectionPages)}
-                    disabled={collectionPage === totalCollectionPages}
-                  >
-                    <ChevronLast size={18} />
-                  </button>
-                </div>
-              )}
             </>
           )
         ) : (
@@ -475,8 +463,9 @@ const BoSuuTap = () => {
               <div className={styles.emptyIcon}>
                 <Clock size={48} />
               </div>
-              <h3>Chưa có lịch sử thi</h3>
-              <p>Bạn chưa làm bài thi nào. Hãy bắt đầu làm bài để xem lịch sử tại đây!</p>
+              <h3>{historyQuery ? "Không tìm thấy lượt thi phù hợp" : "Chưa có lịch sử thi"}</h3>
+              <p>{historyQuery ? "Thử tìm theo tên bài giảng hoặc tên lớp khác." : "Bắt đầu một bài luyện tập để theo dõi kết quả tại đây."}</p>
+              {historyQuery && <button className={styles.btnLamBai} onClick={() => setHistorySearch("")}>Xóa tìm kiếm</button>}
             </div>
           ) : (
             <>
@@ -525,68 +514,19 @@ const BoSuuTap = () => {
                 ))}
               </div>
 
-              {/* Pagination */}
-              {totalHistoryPages > 1 && (
-                <div className={styles.pagination}>
-                  <button 
-                    className={styles.pageBtn}
-                    onClick={() => setHistoryPage(1)}
-                    disabled={historyPage === 1}
-                  >
-                    <ChevronFirst size={18} />
-                  </button>
-                  <button 
-                    className={styles.pageBtn}
-                    onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
-                    disabled={historyPage === 1}
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-                  
-                  <div className={styles.pageNumbers}>
-                    {Array.from({ length: Math.min(5, totalHistoryPages) }, (_, i) => {
-                      let pageNum;
-                      if (totalHistoryPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (historyPage <= 3) {
-                        pageNum = i + 1;
-                      } else if (historyPage >= totalHistoryPages - 2) {
-                        pageNum = totalHistoryPages - 4 + i;
-                      } else {
-                        pageNum = historyPage - 2 + i;
-                      }
-                      return (
-                        <button
-                          key={pageNum}
-                          className={`${styles.pageNum} ${historyPage === pageNum ? styles.pageNumActive : ""}`}
-                          onClick={() => setHistoryPage(pageNum)}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <button 
-                    className={styles.pageBtn}
-                    onClick={() => setHistoryPage(p => Math.min(totalHistoryPages, p + 1))}
-                    disabled={historyPage === totalHistoryPages}
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                  <button 
-                    className={styles.pageBtn}
-                    onClick={() => setHistoryPage(totalHistoryPages)}
-                    disabled={historyPage === totalHistoryPages}
-                  >
-                    <ChevronLast size={18} />
-                  </button>
-                </div>
-              )}
             </>
           )
         )}
       </div>
+
+      {!loadError && currentTotal > 0 && <div className={styles.paginationBar}>
+        <span>{firstItem}–{lastItem} / {currentTotal}</span>
+        <Pagination current={currentPage} pageSize={pageSize} total={currentTotal}
+          disabled={loading} showSizeChanger={false} showLessItems
+          showQuickJumper={Math.ceil(currentTotal / pageSize) > 5}
+          locale={{ jump_to: "Đến", page: "trang", prev_page: "Trang trước", next_page: "Trang sau" }}
+          onChange={page => activeTab === "collection" ? setCollectionPage(page) : setHistoryPage(page)} />
+      </div>}
 
       {/* Preview Modal */}
       {previewModal && previewBaiGiang && (

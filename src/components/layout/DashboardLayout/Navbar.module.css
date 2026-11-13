@@ -115,7 +115,7 @@
 }
 
 .breadcrumbCurrent {
-  font-family: "Syne", sans-serif;
+  font-family: var(--font-family);
   font-weight: 600;
   color: var(--text-primary);
   background: var(--grad-primary);
@@ -154,7 +154,7 @@
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
   padding: 9px 80px 9px 38px;
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-family);
   font-size: 13px;
   color: var(--text-primary);
   outline: none;
@@ -197,7 +197,7 @@
 .searchKbd {
   position: absolute;
   right: 12px;
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-family);
   font-size: 10px;
   color: var(--text-muted);
   background: rgba(24, 95, 165, 0.05);
@@ -356,7 +356,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Syne", sans-serif;
+  font-family: var(--font-family);
   font-weight: 700;
   font-size: 12px;
   color: #fff;
@@ -371,7 +371,7 @@
 }
 
 .chipName {
-  font-family: "Syne", sans-serif;
+  font-family: var(--font-family);
   font-weight: 600;
   font-size: 12px;
   color: var(--text-primary);

@@ -4,6 +4,7 @@ import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import styles from "./DashboardLayout.module.css";
 import { useAuth } from "../../../contexts/AuthContext";
+import UnfinishedExamReminder from '../../ProtectedRoute/UnfinishedExamReminder';
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -26,6 +27,7 @@ const DashboardLayout = () => {
 
   return (
     <div className={styles.root}>
+      <UnfinishedExamReminder />
       {/* Ambient glow background */}
       <div className={styles.ambientBg}>
         <div className={styles.glow1} />

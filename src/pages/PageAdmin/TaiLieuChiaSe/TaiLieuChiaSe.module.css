@@ -567,7 +567,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1;
-  font-family: "Roboto Mono", monospace; /* Hiển thị path/name nhìn pro hơn */
+  font-family: var(--font-family); /* Hiển thị path/name nhìn pro hơn */
   opacity: 0.8;
 }
 

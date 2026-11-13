@@ -303,13 +303,7 @@
   font-size: 15px;
   color: #444;
   padding: 10px 5px;
-  font-family:
-    "Inter",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  font-family: var(--font-family);
 }
 
 /* Các thẻ tiêu đề trong nội dung (Từ TinyMCE) */

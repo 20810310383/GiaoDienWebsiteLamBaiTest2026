@@ -4,6 +4,7 @@ import styles from "./Navbar.module.css";
 import { useAuth } from "../../../contexts/AuthContext";
 import { getInitials } from "../../../utils/scrollUtils";
 import { getPublicUrl } from "../../../utils/formatURL";
+import ApprovalBell from './ApprovalBell';
 
 /* ── Icons ── */
 const IconMenu = () => (
@@ -44,7 +45,8 @@ const ROUTE_LABELS = {
   "/hoc-sinh/lam-bai": "Làm bài thi",
   "/tai-khoan-cua-toi": "Tài khoản của tôi",
   "/lop-hoc": "Lớp học",
-  "/403": "Quyền truy cập",
+  "/403": "Truy cập bị từ chối",
+  "/admin/phan-quyen": "Quyền truy cập",
   "/admin/lich-su-thi": "Lịch sử thi của lớp tôi",
   "/admin/quan-ly-tai-khoan": "Quản lý tài khoản hệ thống",
 };
@@ -61,7 +63,6 @@ const MARQUEE_MESSAGES = [
 const Navbar = ({ onToggleSidebar, sidebarOpen }) => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
-  const [notifDot, setNotifDot] = useState(true);
   const [currentMessage, setCurrentMessage] = useState(0);
   const [fadeIn, setFadeIn] = useState(true);
 
@@ -143,14 +144,7 @@ const Navbar = ({ onToggleSidebar, sidebarOpen }) => {
           <span>{today}</span>
         </div>
 
-        <button
-          className={styles.iconBtn}
-          onClick={() => setNotifDot(false)}
-          aria-label="Thông báo"
-        >
-          <IconBell />
-          {notifDot && <span className={styles.notifBadge} />}
-        </button>
+        <ApprovalBell />
 
         <div className={styles.userChip}>
           <div className={styles.chipAvatar}>

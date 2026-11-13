@@ -71,7 +71,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Syne", sans-serif;
+  font-family: var(--font-family);
   font-weight: 800;
   font-size: 18px;
   color: #fff;
@@ -100,7 +100,7 @@
 }
 
 .logoName {
-  font-family: "Syne", sans-serif;
+  font-family: var(--font-family);
   font-weight: 700;
   font-size: 15px;
   color: var(--text-primary);
@@ -173,7 +173,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Syne", sans-serif;
+  font-family: var(--font-family);
   font-weight: 700;
   font-size: 15px;
   color: #fff;
@@ -202,7 +202,7 @@
 }
 
 .userName {
-  font-family: "Syne", sans-serif;
+  font-family: var(--font-family);
   font-weight: 600;
   font-size: 13px;
   color: var(--text-primary);
@@ -412,7 +412,7 @@
 }
 
 .progressPct {
-  font-family: "Syne", sans-serif;
+  font-family: var(--font-family);
   font-weight: 700;
   color: var(--accent-cyan);
 }
@@ -448,7 +448,7 @@
   border: 1px solid var(--border-subtle);
   background: transparent;
   color: var(--text-muted);
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-family);
   font-size: 13px;
   cursor: pointer;
   width: 100%;

@@ -7,10 +7,10 @@ import { useAuth } from "../../contexts/AuthContext";
  * Ví dụ: Trang "Tài khoản của tôi", "Đổi mật khẩu"...
  */
 // const UserProtectedRoute = () => {
-//   const { isLoggedIn, isLoading } = useAuth();
+//   const { isLoggedIn, loading } = useAuth();
 
 //   // Nếu đang trong quá trình kiểm tra (ví dụ: đang gọi API /me)
-//   if (isLoading) {
+//   if (loading) {
 //     // Bạn có thể hiển thị một spinner (biểu tượng tải) ở đây
 //     return <div>Đang tải...</div>;
 //   }
@@ -28,9 +28,9 @@ import { useAuth } from "../../contexts/AuthContext";
 // };
 
 const UserProtectedRoute = ({ children }) => {
-  const { isLoggedIn, isLoading } = useAuth();
+  const { isLoggedIn, loading } = useAuth();
 
-  if (isLoading) return <div>Đang tải hệ thống...</div>;
+  if (loading) return <div>Đang tải hệ thống...</div>;
 
   if (!isLoggedIn) {
     return <Navigate to="/dang-nhap" replace />;

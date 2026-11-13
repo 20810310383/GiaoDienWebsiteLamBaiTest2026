@@ -234,7 +234,7 @@
 }
 
 .navDotActive {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
+  background: linear-gradient(135deg, var(--accent-primary, #185fa5), var(--accent-secondary, #0891b2)) !important;
   border-color: transparent !important;
   color: white !important;
   box-shadow: 0 2px 8px rgba(24,95,165,0.3);
@@ -538,7 +538,7 @@
   height: 64px;
   border-radius: 50%;
   background: linear-gradient(135deg, rgba(24,95,165,0.1), rgba(8,145,178,0.1));
-  color: var(--accent-primary);
+  color: #185fa5;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -568,40 +568,43 @@
 .confirmSubmit {
   flex: 1;
   padding: 12px 16px;
-  border-radius: var(--radius-md);
+  border-radius: 11px;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background 150ms ease, border-color 150ms ease;
+  min-height: 46px;
 }
 
 .confirmCancel {
-  background: var(--bg-muted);
-  border: 1.5px solid var(--border-medium);
-  color: var(--text-secondary);
+  background: #fff;
+  border: 1px solid #ccdae8;
+  color: #517492;
 }
 
 .confirmCancel:hover {
-  border-color: var(--text-secondary);
-  color: var(--text-primary);
+  border-color: #8faec9;
+  background: #f1f6fb;
+  color: #173b5c;
 }
 
 .confirmSubmit {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  border: none;
-  color: white;
-  box-shadow: 0 4px 12px rgba(24,95,165,0.3);
+  background: #185fa5;
+  border: 1px solid #185fa5;
+  color: #fff;
+  box-shadow: 0 4px 10px #185fa51a;
 }
 
 .confirmSubmit:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(24,95,165,0.4);
+  background: #124d88;
+  border-color: #124d88;
 }
 
 .confirmSubmit:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
+.confirmCancel:focus-visible, .confirmSubmit:focus-visible { outline: 3px solid #83b9e8; outline-offset: 3px; }
 
 /* ═══════════════════════════════════════════════
    RESULT PAGE — Trang kết quả (thiết kế mới)
@@ -1328,3 +1331,83 @@
     display: none;
   }
 }
+
+/* Focused exam workspace */
+.examPage { display: grid; grid-template-columns: minmax(0, 1fr) 280px; grid-template-rows: auto auto auto 1fr; align-content: start; align-items: start; gap: 20px; padding: clamp(16px, 2vw, 28px); min-height: calc(100vh - 100px); background: #f5f8fc; container-type: inline-size; }
+.examHeader { grid-column: 1 / -1; grid-row: 1; position: sticky; top: 0; z-index: 5; border: 1px solid #dfe8f1; border-radius: 18px; padding: 18px 20px; box-shadow: 0 4px 18px #173b5c06; gap: 14px; }
+.examInfo h2 { font-size: 1.1rem; font-weight: 800; white-space: normal; line-height: 1.5; color: #173b5c; }
+.examMeta { color: #7b8da0; margin-top: 4px; line-height: 1.5; }
+.timer { font-size: 1.05rem; font-variant-numeric: tabular-nums; background: #eef6fd; border-radius: 12px; padding: 11px 14px; }
+.timerWarning { animation: none; }
+.headerSubmit, .sideSubmit { display: flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 11px; background: #185fa5; color: white; padding: 12px 18px; font: inherit; font-size: 0.88rem; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.headerSubmit:hover, .sideSubmit:hover { background: #124e89; }
+.headerSubmit:disabled, .sideSubmit:disabled { opacity: .55; cursor: wait; }
+.progressSection { grid-column: 1 / -1; grid-row: 2; padding: 18px 22px; background: #fff; border: 1px solid #e0e8f1; border-radius: 16px; }
+.progressInfo { gap: 12px; flex-wrap: wrap; }
+.progressStats { color: #74899e; font-size: .8rem; }
+.progressBar { height: 6px; background: #edf2f8; border-radius: 8px; }
+.progressFill { background: #229e90; }
+.noiDungBaiHoc { grid-column: 1; grid-row: 3; margin: 0; border: 1px solid #dfe8f1; border-radius: 16px; background: #fff; overflow: hidden; }
+.noiDungHeader { display: flex; align-items: center; gap: 10px; width: 100%; padding: 16px 20px; border: 0; background: #edf5fd; color: #185fa5; font: inherit; font-size: .88rem; font-weight: 800; text-align: left; }
+.noiDungContent { max-height: 340px; padding: 22px; line-height: 1.85; color: #486179; font-size: .92rem; overscroll-behavior: contain; }
+.noiDungContent h2, .noiDungContent h3 { color: #173b5c; font-size: 1.05rem; margin: 18px 0 10px; }
+.questionNav { grid-column: 2; grid-row: 3 / 5; position: sticky; top: 104px; display: block; padding: 22px; background: #fff; border: 1px solid #e0e8f1; border-radius: 18px; min-height: 330px; max-height: none; overflow: visible; }
+.navigatorHeading { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; color: #173b5c; font-size: .88rem; font-weight: 800; }
+.navigatorHeading > span { margin-left: auto; color: #8193a4; font-size: .76rem; }
+.questionGrid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; max-height: 360px; overflow-y: auto; overscroll-behavior: contain; padding: 3px; }
+.navDot { width: 100%; height: 36px; border-radius: 9px; box-shadow: none; font-size: .8rem; }
+.navDotAnswered { background: #edf9f3; border-color: #a2d5bf; color: #168468; }
+.navDotActive, .navDotActive.navDotAnswered { background: #185fa5; border-color: #185fa5; color: white; box-shadow: 0 3px 7px #185fa51a; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; padding: 18px 0; font-size: .68rem; color: #8193a4; }
+.legend span { display: flex; align-items: center; gap: 5px; }
+.legend i { width: 9px; height: 9px; border: 1px solid #cbd9e7; border-radius: 3px; background: #fff; }
+.legend .legendDone { background: #d8f0e5; border-color: #83c7a8; }
+.sideSubmit { width: 100%; }
+.submitHint { margin: 12px 0 0; color: #8193a4; font-size: .73rem; line-height: 1.7; }
+.examContent { grid-column: 1; grid-row: 4; display: block; width: 100%; max-width: none; margin: 0; padding: 0; }
+.questionCard { width: 100%; max-width: none; border: 1px solid #dfe8f1; border-radius: 18px; background: #fff; box-shadow: 0 4px 20px #173b5c06; animation: none; overflow: hidden; }
+.questionHeader { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 24px; border-bottom: 1px solid #e7eef5; background: #fff; }
+.questionBadge { background: #eaf3fd; color: #185fa5; font-size: .76rem; border-radius: 8px; padding: 6px 11px; }
+.questionStatus { color: #8193a4; font-size: .75rem; }
+.questionText { padding: 24px 26px 12px; color: #173b5c; font-size: 1.05rem; line-height: 1.8; font-weight: 700; overflow-wrap: anywhere; }
+.questionText p { margin: 0; font-size: inherit; line-height: inherit; }
+.answersList { padding: 12px 26px 26px; gap: 12px; }
+.answerOption { padding: 15px; border: 1px solid #dce6ef; border-radius: 12px; background: #f9fbfe; min-height: 64px; transition: background .15s, border-color .15s; }
+.answerOption:hover { transform: none; background: #f0f6fd; }
+.answerSelected, .answerSelected:hover { border-color: #5c9ed3; background: #edf5ff; box-shadow: 0 0 0 1px #5c9ed3; }
+.answerText { font-size: .94rem; line-height: 1.65; color: #425d76; }
+.answerLabel { width: 33px; height: 33px; border-radius: 9px; flex-shrink: 0; }
+.navigation { max-width: none; width: 100%; margin: 18px 0 0; padding: 0; }
+.navBtn { padding: 11px 16px; font-size: .84rem; border-radius: 11px; }
+.submitConfirmation { text-align: center; padding: 16px 8px 4px; }
+.submitConfirmation h3 { margin: 18px 0 10px; font-size: 1.25rem; color: #173b5c; font-weight: 800; }
+.submitConfirmation > p { color: #74899e; line-height: 1.8; margin-bottom: 24px; }
+.submitConfirmation .confirmIcon { margin: 0 auto; }
+.examPage button:focus-visible { outline: 3px solid #83b9e8; outline-offset: 3px; }
+@container (max-width: 850px) {
+  .examPage > .examHeader { flex-wrap: wrap; position: static; }
+  .examInfo { flex-basis: calc(100% - 60px); }
+  .timer { margin-left: auto; }
+}
+@media (max-width: 1100px) {
+  .examPage { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .questionNav { grid-column: 1; grid-row: 4; position: static; padding: 18px; min-height: 170px; }
+  .examContent { grid-row: 5; }
+  .questionGrid { grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); }
+  .sideSubmit, .submitHint { display: none; }
+  .legend { padding-bottom: 0; }
+}
+@media (max-width: 600px) {
+  .examPage { padding: 12px; }
+  .examHeader { padding: 15px; flex-wrap: wrap; }
+  .headerSubmit { flex: 1; }
+  .timer { margin-left: 0; }
+  .examInfo h2 { font-size: .98rem; }
+  .progressStats { gap: 5px; font-size: .72rem; }
+  .questionHeader { padding: 16px; }
+  .questionText { padding: 20px 18px 8px; font-size: .98rem; }
+  .answersList { padding: 12px 18px 20px; }
+  .answerText { font-size: .88rem; }
+}
+@media (prefers-reduced-motion: reduce) { .examPage *, .examPage *::before { animation: none !important; transition: none !important; } }
+.leaveWarning { color: #64748b; line-height: 1.8; margin: 14px 0 24px; }

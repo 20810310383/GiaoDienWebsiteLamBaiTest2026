@@ -2,7 +2,7 @@
   min-height: 100vh;
   background: var(--bg-base);
   padding: 32px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-family);
   position: relative;
   overflow: hidden;
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation, unstable_useBlocker as useBlocker } from "react-router-dom";
 import { 
   Clock, 
   ChevronLeft, 
@@ -14,15 +14,19 @@ import {
   BookOpen,
   ArrowLeft
 } from "lucide-react";
-import { message } from "antd";
+import { message, Modal } from "antd";
 import styles from "./LamBai.module.css";
 import baiGiangThuongMaiAPI from "../../../services/baiGiangThuongMaiAPI";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useRealtime } from "../../../hook/useRealtime";
+import ResumeExamModal from '../../../components/ProtectedRoute/ResumeExamModal';
 
 const LamBai = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const location = useLocation();
+  const submitOnRestore = useRef(location.state?.submitSavedExam === true);
+  const { token, user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [baiThi, setBaiThi] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -30,9 +34,68 @@ const LamBai = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showResume, setShowResume] = useState(false);
+  useEffect(() => {
+    if (!loading && baiThi && showResume && submitOnRestore.current) {
+      submitOnRestore.current = false;
+      submitRef.current?.(true);
+    }
+  }, [loading, baiThi, showResume]);
+  const resumePending = useRef(false);
+  const wasHidden = useRef(false);
   const [result, setResult] = useState(null);
-  const [showNoiDung, setShowNoiDung] = useState(true);
+  const examInProgress = !!baiThi && !result;
+  const blocker = useBlocker(examInProgress);
+  useEffect(() => {
+    if (!examInProgress) return;
+    const warnBeforeLeaving = (event) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warnBeforeLeaving);
+    return () => window.removeEventListener('beforeunload', warnBeforeLeaving);
+  }, [examInProgress]);
+  const [showNoiDung, setShowNoiDung] = useState(false);
   const timerRef = useRef(null);
+  const deadlineRef = useRef(0);
+  const answersRef = useRef({});
+  const submitRef = useRef(null);
+  const submittingRef = useRef(false);
+  const autoSentRef = useRef(false);
+  const clockOffset = useRef(0);
+  const storageKey = 'exam:' + (user?._id || user?.id) + ':' + id;
+  const saveDraft = () => {
+    if (!baiThi || result) return;
+    localStorage.setItem(storageKey, JSON.stringify({ attempt: baiThi.soLanThi, deadline: deadlineRef.current,
+      answers: answersRef.current, currentQuestion }));
+  };
+  useEffect(() => { saveDraft(); }, [currentQuestion, baiThi, result]);
+  useEffect(() => {
+    if (!baiThi || result) return;
+    const visibilityChanged = () => {
+      if (document.hidden) {
+        wasHidden.current = true;
+        resumePending.current = true;
+        saveDraft();
+      } else if (wasHidden.current) {
+        wasHidden.current = false;
+        setShowConfirm(false);
+        setShowResume(true);
+      }
+    };
+    document.addEventListener('visibilitychange', visibilityChanged);
+    window.addEventListener('pagehide', saveDraft);
+    return () => {
+      document.removeEventListener('visibilitychange', visibilityChanged);
+      window.removeEventListener('pagehide', saveDraft);
+    };
+  }, [baiThi, result, currentQuestion]);
+  useRealtime(token, { connect: (socket) => {
+    const sent = Date.now();
+    socket.timeout(5000).emit('clock:sync', (error, response) => {
+      if (!error && Number.isFinite(response?.now)) clockOffset.current = response.now - (sent + Date.now()) / 2;
+    });
+  } });
 
 
   // Load bài thi
@@ -41,25 +104,27 @@ const LamBai = () => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [id]);
+  }, [id, token]);
 
-  // Timer
+  // Recompute from an absolute deadline; background-tab throttling cannot add time.
   useEffect(() => {
-    if (baiThi && !result && timeLeft > 0) {
-      timerRef.current = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current);
-            handleSubmit(true);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-
+    if (!baiThi || result) return;
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((deadlineRef.current - Date.now() - clockOffset.current) / 1000));
+      setTimeLeft(remaining);
+      if (!remaining && !autoSentRef.current && !resumePending.current && !document.hidden) {
+        autoSentRef.current = true;
+        submitRef.current?.(true);
+      }
+    };
+    tick();
+    timerRef.current = setInterval(tick, 250);
+    window.addEventListener('focus', tick);
+    document.addEventListener('visibilitychange', tick);
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      clearInterval(timerRef.current);
+      window.removeEventListener('focus', tick);
+      document.removeEventListener('visibilitychange', tick);
     };
   }, [baiThi, result]);
 
@@ -68,8 +133,21 @@ const LamBai = () => {
       setLoading(true);
       const res = await baiGiangThuongMaiAPI.getBaiThi(id, token);
       if (res.success) {
+        const duration = res.data.baiGiang.thoi_gian_lam_bai * 60000;
+        let saved;
+        try { saved = JSON.parse(localStorage.getItem(storageKey)); } catch { /* Invalid saved draft. */ }
+        const sameAttempt = saved?.attempt === res.data.soLanThi && Number.isFinite(saved?.deadline);
+        if (!sameAttempt) submitOnRestore.current = false;
+        deadlineRef.current = sameAttempt ? saved.deadline : Date.now() + clockOffset.current + duration;
+        answersRef.current = sameAttempt ? saved.answers || {} : {};
+        setCurrentQuestion(sameAttempt ? Math.max(0, Math.min(res.data.cauHoi.length - 1, Number(saved.currentQuestion) || 0)) : 0);
+        resumePending.current = sameAttempt;
+        setShowResume(sameAttempt);
+        setAnswers(answersRef.current);
+        autoSentRef.current = false;
+        localStorage.setItem(storageKey, JSON.stringify({ attempt: res.data.soLanThi, deadline: deadlineRef.current, answers: answersRef.current }));
         setBaiThi(res.data);
-        setTimeLeft(res.data.baiGiang.thoi_gian_lam_bai * 60);
+        setTimeLeft(Math.max(0, Math.ceil((deadlineRef.current - Date.now() - clockOffset.current) / 1000)));
       }
     } catch (error) {
       console.error("Lỗi load bài thi:", error);
@@ -82,10 +160,11 @@ const LamBai = () => {
 
   // Chọn đáp án
   const selectAnswer = (label) => {
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: label
-    }));
+    if (resumePending.current || submittingRef.current || Date.now() + clockOffset.current >= deadlineRef.current) return;
+    const next = { ...answersRef.current, [currentQuestion]: label };
+    answersRef.current = next;
+    setAnswers(next);
+    localStorage.setItem(storageKey, JSON.stringify({ attempt: baiThi.soLanThi, deadline: deadlineRef.current, answers: next, currentQuestion }));
   };
 
   // Chuyển câu hỏi
@@ -112,14 +191,16 @@ const LamBai = () => {
       return;
     }
 
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     try {
       setIsSubmitting(true);
 
       // Tính thời gian đã làm
-      const thoiGianLam = baiThi.baiGiang.thoi_gian_lam_bai * 60 - timeLeft;
+      const thoiGianLam = Math.min(baiThi.baiGiang.thoi_gian_lam_bai * 60, Math.max(0, baiThi.baiGiang.thoi_gian_lam_bai * 60 - Math.ceil((deadlineRef.current - Date.now() - clockOffset.current) / 1000)));
 
       // Chuẩn bị đáp án
-      const dapAnDaChon = baiThi.cauHoi.map((_, idx) => answers[idx] || null);
+      const dapAnDaChon = baiThi.cauHoi.map((_, idx) => answersRef.current[idx] || null);
 
       const res = await baiGiangThuongMaiAPI.nopBaiThi({
         id_bai_giang: id,
@@ -128,6 +209,9 @@ const LamBai = () => {
       }, token);
 
       if (res.success) {
+        localStorage.removeItem(storageKey);
+        resumePending.current = false;
+        setShowResume(false);
         setResult(res.data);
         if (timerRef.current) clearInterval(timerRef.current);
       }
@@ -135,10 +219,13 @@ const LamBai = () => {
       console.error("Lỗi nộp bài:", error);
       message.error("Không thể nộp bài thi");
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
       setShowConfirm(false);
     }
   };
+
+  submitRef.current = handleSubmit;
 
   // Format thời gian
   const formatTime = (seconds) => {
@@ -299,7 +386,9 @@ const LamBai = () => {
       {/* Nội dung bài học */}
       {baiThi.baiGiang.noi_dung_bai_hoc && (
         <div className={styles.noiDungBaiHoc}>
-          <div 
+          <button
+            type="button"
+            aria-expanded={showNoiDung}
             className={styles.noiDungHeader}
             onClick={() => setShowNoiDung(!showNoiDung)}
             style={{ cursor: "pointer" }}
@@ -309,7 +398,7 @@ const LamBai = () => {
             <span style={{ marginLeft: "auto" }}>
               {showNoiDung ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </span>
-          </div>
+          </button>
           {showNoiDung && (
             <div 
               className={styles.noiDungContent}
@@ -320,7 +409,7 @@ const LamBai = () => {
       )}
       {/* Header */}
       <div className={styles.examHeader}>
-        <button className={styles.backBtn} onClick={() => navigate(-1)}>
+        <button className={styles.backBtn} aria-label="Quay lại" onClick={() => navigate(-1)}>
           <ChevronLeft size={20} />
         </button>
         
@@ -333,10 +422,14 @@ const LamBai = () => {
 
         <div 
           className={`${styles.timer} ${timeLeft < 60 ? styles.timerWarning : ""}`}
+          role="timer" aria-label="Thời gian còn lại"
         >
           <Clock size={20} />
           <span>{formatTime(timeLeft)}</span>
         </div>
+        <button className={styles.headerSubmit} onClick={() => handleSubmit(false)} disabled={isSubmitting}>
+          <Send size={17} />{isSubmitting ? "Đang nộp…" : "Nộp bài"}
+        </button>
       </div>
 
       {/* Progress */}
@@ -363,6 +456,8 @@ const LamBai = () => {
 
       {/* Question Navigator */}
       <div className={styles.questionNav}>
+        <div className={styles.navigatorHeading}><ListChecksIcon />Bảng câu hỏi<span>{answeredCount}/{baiThi.tongSoCau}</span></div>
+        <div className={styles.questionGrid}>
         {baiThi.cauHoi.map((q, idx) => (
           <button
             key={idx}
@@ -370,10 +465,16 @@ const LamBai = () => {
               idx === currentQuestion ? styles.navDotActive : ""
             } ${answers[idx] ? styles.navDotAnswered : ""}`}
             onClick={() => goToQuestion(idx)}
+            aria-label={`Câu ${idx + 1}, ${answers[idx] ? 'đã trả lời' : 'chưa trả lời'}`}
+            aria-current={idx === currentQuestion ? 'step' : undefined}
           >
             {idx + 1}
           </button>
         ))}
+        </div>
+        <div className={styles.legend}><span><i />Chưa trả lời</span><span><i className={styles.legendDone} />Đã trả lời</span></div>
+        <button className={styles.sideSubmit} onClick={() => handleSubmit(false)} disabled={isSubmitting}><Send size={16} />Nộp bài</button>
+        <p className={styles.submitHint}>Bạn có thể nộp bài bất cứ lúc nào. Kiểm tra các câu chưa trả lời trước khi nộp.</p>
       </div>
 
       {/* Main Content */}
@@ -382,10 +483,11 @@ const LamBai = () => {
         <div className={styles.questionCard}>
           <div className={styles.questionHeader}>
             <span className={styles.questionBadge}>Câu {currentQuestion + 1}</span>
+            <span className={styles.questionStatus}>{answers[currentQuestion] ? 'Đã chọn đáp án' : 'Chọn một đáp án đúng'}</span>
           </div>
           
           <div className={styles.questionText}>
-            <p dangerouslySetInnerHTML={{ __html: currentQ.noiDungCauHoi }} />
+            <div dangerouslySetInnerHTML={{ __html: currentQ.noiDungCauHoi }} />
           </div>
 
           <div className={styles.answersList}>
@@ -396,6 +498,8 @@ const LamBai = () => {
                   answers[currentQuestion] === answer.label ? styles.answerSelected : ""
                 }`}
                 onClick={() => selectAnswer(answer.label)}
+                aria-pressed={answers[currentQuestion] === answer.label}
+                disabled={isSubmitting || timeLeft === 0}
               >
                 <span className={`${styles.answerLabel} ${
                   answers[currentQuestion] === answer.label ? styles.answerLabelSelected : ""
@@ -444,10 +548,25 @@ const LamBai = () => {
         </div>
       </div>
 
+      <ResumeExamModal open={showResume} seconds={timeLeft} answered={answeredCount} total={baiThi.tongSoCau}
+        submitting={isSubmitting}
+        onContinue={() => {
+          if (deadlineRef.current <= Date.now() + clockOffset.current) { setTimeLeft(0); return; }
+          resumePending.current = false; setShowResume(false);
+        }}
+        onSubmit={() => handleSubmit(true)} />
+    <Modal open={!showResume && blocker.state === 'blocked'} centered title="Bạn đang làm bài"
+        onCancel={() => blocker.reset?.()} footer={null}>
+        <p className={styles.leaveWarning}>Bạn chưa nộp bài nên không thể chuyển sang trang khác. Hãy tiếp tục làm bài hoặc nộp bài trước khi rời trang.</p>
+        <div className={styles.confirmActions}>
+          <button className={styles.confirmCancel} onClick={() => blocker.reset?.()}>Tiếp tục làm bài</button>
+          <button className={styles.confirmSubmit} disabled={isSubmitting} onClick={() => { blocker.reset?.(); handleSubmit(false); }}>Nộp bài</button>
+        </div>
+      </Modal>
+
       {/* Confirm Modal */}
-      {showConfirm && (
-        <div className={styles.confirmOverlay} onClick={() => setShowConfirm(false)}>
-          <div className={styles.confirmModal} onClick={(e) => e.stopPropagation()}>
+      <Modal open={showConfirm} onCancel={() => { if (!isSubmitting) setShowConfirm(false); }} footer={null} centered width={440} closable={!isSubmitting} maskClosable={!isSubmitting}>
+          <div className={styles.submitConfirmation}>
             <div className={styles.confirmIcon}>
               <AlertCircle size={40} />
             </div>
@@ -461,9 +580,10 @@ const LamBai = () => {
             <div className={styles.confirmActions}>
               <button 
                 className={styles.confirmCancel}
+                disabled={isSubmitting}
                 onClick={() => setShowConfirm(false)}
               >
-                Hủy
+                Tiếp tục làm bài
               </button>
               <button 
                 className={styles.confirmSubmit}
@@ -474,10 +594,13 @@ const LamBai = () => {
               </button>
             </div>
           </div>
-        </div>
-      )}
+      </Modal>
     </div>
   );
 };
 
 export default LamBai;
+
+function ListChecksIcon() {
+  return <CheckCircle size={17} />;
+}

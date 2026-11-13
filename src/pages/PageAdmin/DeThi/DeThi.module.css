@@ -25,7 +25,7 @@
   min-height: 100vh;
   background: var(--bg);
   color: var(--text);
-  font-family: "Sora", "Be Vietnam Pro", system-ui, sans-serif;
+  font-family: var(--font-family);
   padding: 28px 32px;
 }
 
@@ -2434,7 +2434,7 @@
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 10px;
-  font-family: monospace;
+  font-family: var(--font-family);
   font-size: 13px;
   white-space: pre-wrap;
 }

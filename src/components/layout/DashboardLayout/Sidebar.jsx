@@ -190,10 +190,11 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
           accent: "blue",
         },
         {
-          to: "/403",
+          to: "/admin/phan-quyen",
           label: "Quyền truy cập",
           icon: <IconShield />,
           accent: "emerald",
+          roles: ["admin"],
         },
       ],
     },

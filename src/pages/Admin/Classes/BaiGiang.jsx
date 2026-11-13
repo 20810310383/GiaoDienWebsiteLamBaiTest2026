@@ -33,7 +33,6 @@ import {
   BookOpen,
   Layers,
   TrendingUp,
-  DollarSign,
   Eye,
   ListChecks,
   Lightbulb,
@@ -56,6 +55,7 @@ import {
 } from "lucide-react";
 import { Editor } from "@tinymce/tinymce-react";
 import styles from "./BaiGiang.module.css";
+import LessonPreviewDrawer from "./LessonPreviewDrawer";
 import { useAuth } from "../../../contexts/AuthContext";
 import {
   getAllBaiGiang,
@@ -111,6 +111,8 @@ const BaiGiang = () => {
   const [previewQuestions, setPreviewQuestions] = useState([]);
   const questionRefs = useRef({});
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState(false);
+  const previewRequest = useRef(0);
 
   // Editor ref
   const editorRef = useRef(null);
@@ -180,6 +182,7 @@ const BaiGiang = () => {
     try {
       const payload = {
         ...values,
+        giaBaiGiang: 0,
         anhDaiDien: imageUrl || editingBaiGiang?.anhDaiDien,
         id_lop_hoc: lopHocInfo._id,
         noi_dung_bai_hoc: noiDungBaiHoc, // Lấy từ state thay vì form để tránh circular reference
@@ -216,7 +219,6 @@ const BaiGiang = () => {
       ten_bai_giang: baiGiang.ten_bai_giang,
       gioiThieu: baiGiang.gioiThieu,
       thoi_gian_lam_bai: baiGiang.thoi_gian_lam_bai,
-      giaBaiGiang: baiGiang.giaBaiGiang,
       noi_dung_bai_hoc: baiGiang.noi_dung_bai_hoc,
     });
     setIsModalOpen(true);
@@ -281,9 +283,9 @@ const BaiGiang = () => {
       return;
     }
     setTempQuestions((prev) => prev.filter((_, i) => i !== index));
-    if (activeQuestionIndex >= tempQuestions.length - 1) {
-      setActiveQuestionIndex(Math.max(0, tempQuestions.length - 2));
-    }
+    const nextIndex = Math.max(0, Math.min(index, tempQuestions.length - 2));
+    setActiveQuestionIndex(nextIndex);
+    setExpandedQuestions({ [nextIndex]: true });
   };
 
   // Thêm đáp án
@@ -365,34 +367,21 @@ const BaiGiang = () => {
 
   // Validate và lưu câu hỏi
   const handleSaveQuestions = async () => {
-    const hasEmpty = tempQuestions.some((q) => {
-      const content = q.noiDungCauHoi;
-      const hasContent = typeof content === 'string' && content.trim().length > 0 && content !== "<p></p>";
-      const hasCorrectAnswer = q.cacDapAn.some((a) => a.laDapAnDung);
-      return !hasContent || !hasCorrectAnswer;
-    });
+    const hasEmpty = tempQuestions.some((q) => !isQuestionValid(q));
 
     if (hasEmpty) {
-      message.error("Vui lòng điền đầy đủ nội dung câu hỏi và chọn đáp án đúng!");
+      message.error("Vui lòng điền nội dung câu hỏi, tất cả đáp án và chọn đáp án đúng!");
       return;
     }
 
     setSavingQuestions(true);
     try {
-      // Log data trước khi gửi
-      console.log("Data sẽ gửi:", JSON.parse(JSON.stringify({ cauHois: tempQuestions })));
-
-      // Xóa hết câu hỏi cũ (dùng originalQuestions thay vì baiGiangList)
-      if (originalQuestions.length > 0) {
-        for (const cauHoi of originalQuestions) {
-          await xoaCauHoi(tempBaiGiangId, cauHoi._id, token);
-        }
-      }
-
-      // Thêm lại tất cả câu hỏi
-      if (tempQuestions.length > 0) {
-        await themNhieuCauHoi(tempBaiGiangId, { cauHois: tempQuestions }, token);
-      }
+      // Save the complete bank in one update so a failed request keeps the old bank intact.
+      await updateBaiGiang(tempBaiGiangId, {
+        danhSachCauHoi: tempQuestions.map(({ _id, noiDungCauHoi, cacDapAn, giaiThich }) => ({
+          ...(_id ? { _id } : {}), noiDungCauHoi, cacDapAn, giaiThich,
+        })),
+      }, token);
 
       message.success("Lưu câu hỏi thành công!");
       setDrawerOpen(false);
@@ -469,9 +458,11 @@ const BaiGiang = () => {
 
   // Xem chi tiết câu hỏi
   const openPreviewModal = async (baiGiang) => {
+    const request = ++previewRequest.current;
     setPreviewBaiGiang(baiGiang);
     setPreviewModalOpen(true);
     setPreviewLoading(true);
+    setPreviewError(false);
     setPreviewQuestions([]); // Reset trước
     try {
       const res = await getBaiGiangById(baiGiang._id, token);
@@ -479,25 +470,24 @@ const BaiGiang = () => {
      
       
       const fullBaiGiang = res.data || res;
+      if (request !== previewRequest.current) return;
       
       if (!fullBaiGiang) {
-        message.error("Không lấy được dữ liệu bài giảng");
-        return;
+        throw new Error("Không lấy được dữ liệu bài giảng");
       }
       
       const questions = fullBaiGiang.danhSachCauHoi || [];
       
       setPreviewQuestions(questions);
-      
-      if (questions.length === 0) {
-        message.warning("Bài giảng này chưa có câu hỏi nào");
-      }
+      setPreviewBaiGiang(fullBaiGiang);
     } catch (error) {
+      if (request !== previewRequest.current) return;
       console.error("Lỗi preview:", error);
       message.error("Không thể tải câu hỏi: " + (error.message || "Lỗi không xác định"));
       setPreviewQuestions([]);
+      setPreviewError(true);
     } finally {
-      setPreviewLoading(false);
+      if (request === previewRequest.current) setPreviewLoading(false);
     }
   };
 
@@ -540,18 +530,23 @@ const BaiGiang = () => {
 
   // Thống kê
   const totalQuestions = baiGiangList.reduce((sum, bg) => sum + (bg.soCauHoi || 0), 0);
-  const totalFree = baiGiangList.filter((bg) => bg.giaBaiGiang === 0).length;
-  const totalPaid = baiGiangList.filter((bg) => bg.giaBaiGiang > 0).length;
+  const totalContent = baiGiangList.filter((bg) => bg.noi_dung_bai_hoc?.trim()).length;
 
   // Kiểm tra câu hỏi hợp lệ (chỉ check không rỗng)
   const isQuestionValid = (q) => {
     const content = q.noiDungCauHoi;
-    const hasContent = typeof content === 'string' && content.trim().length > 0 && content !== "<p></p>";
-    const hasAnswers = q.cacDapAn.length >= 2 && q.cacDapAn.some((a) => a.laDapAnDung);
+    const hasContent = typeof content === 'string' && content.replace(/<[^>]*>|&nbsp;/g, '').trim().length > 0;
+    const hasAnswers = q.cacDapAn.length >= 2 && q.cacDapAn.every((a) => a.noiDungDapAn.trim()) && q.cacDapAn.some((a) => a.laDapAnDung);
     return hasContent && hasAnswers;
   };
 
   const activeQuestion = tempQuestions[activeQuestionIndex] || null;
+  const validQuestionCount = tempQuestions.filter(isQuestionValid).length;
+  const questionText = (html) => new DOMParser().parseFromString(String(html || ""), "text/html").body.textContent?.trim() || "";
+  const selectQuestion = (index) => {
+    setActiveQuestionIndex(index);
+    setExpandedQuestions({ [index]: true });
+  };
   const ANSWER_LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H"];
 
   return (
@@ -561,7 +556,7 @@ const BaiGiang = () => {
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerLeft}>
-          <button className={styles.backBtn} onClick={() => navigate(-1)}>
+          <button className={styles.backBtn} aria-label="Quay lại danh sách lớp học" onClick={() => navigate("/lop-hoc")}>
             <ChevronLeft size={20} />
           </button>
           <div className={styles.headerInfo}>
@@ -570,10 +565,10 @@ const BaiGiang = () => {
               Quản lý lớp học
             </span>
             <h1 className={styles.headerTitle}>
-              Bài Giảng <em>Lớp: {lopHocInfo?.ten_lop || className || "Không xác định"}</em>
+              Bài giảng <em>của lớp</em>
             </h1>
             <p className={styles.headerSub}>
-              {isHocSinh ? "Xem và học bài giảng" : "Quản lý bài giảng và câu hỏi trắc nghiệm"}
+              {lopHocInfo?.ten_lop || className?.replaceAll("-", " ") || "Đang tải thông tin lớp…"}
             </p>
           </div>
         </div>
@@ -583,6 +578,7 @@ const BaiGiang = () => {
             <Search size={16} className={styles.searchIcon} />
             <input
               type="text"
+              aria-label="Tìm kiếm bài giảng theo tên hoặc mã"
               placeholder="Tìm kiếm bài giảng..."
               className={styles.searchInput}
               value={searchKey}
@@ -637,17 +633,8 @@ const BaiGiang = () => {
             <TrendingUp size={22} />
           </div>
           <div>
-            <div className={styles.statNum}>{totalFree}</div>
-            <div className={styles.statLabel}>Miễn Phí</div>
-          </div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statIcon} style={{ "--icon-color": "#b45309" }}>
-            <DollarSign size={22} />
-          </div>
-          <div>
-            <div className={styles.statNum}>{totalPaid}</div>
-            <div className={styles.statLabel}>Trả Phí</div>
+            <div className={styles.statNum}>{totalContent}</div>
+            <div className={styles.statLabel}>Bài có tài liệu</div>
           </div>
         </div>
       </div>
@@ -672,8 +659,9 @@ const BaiGiang = () => {
       ) : filteredBaiGiang.length === 0 ? (
         <div className={styles.emptyState}>
           <BookOpen size={48} strokeWidth={1.5} />
-          <p>{isHocSinh ? "Lớp học này chưa có bài giảng nào" : "Chưa có bài giảng nào. Tạo bài giảng đầu tiên ngay!"}</p>
-          {isManagement && (
+          <p>{searchKey ? "Không tìm thấy bài giảng phù hợp" : isHocSinh ? "Lớp học này chưa có bài giảng nào" : "Chưa có bài giảng nào. Tạo bài giảng đầu tiên ngay!"}</p>
+          {searchKey && <button className={styles.btnSecondary} onClick={() => setSearchKey("")}>Xóa tìm kiếm</button>}
+          {isManagement && !searchKey && (
             <button className={styles.btnPrimary} onClick={() => setIsModalOpen(true)}>
               <Plus size={16} />
               Tạo Bài Giảng
@@ -694,11 +682,13 @@ const BaiGiang = () => {
                   src={getPublicUrl(baiGiang.anhDaiDien) || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600"}
                   alt={baiGiang.ten_bai_giang}
                   className={styles.coverImg}
+                  loading="lazy"
                   onError={(e) => {
                     e.target.src = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600";
                   }}
                 />
                 <div className={styles.coverOverlay} />
+                <span className={styles.lessonNumber}>BÀI {String(index + 1).padStart(2, "0")}</span>
                 <div className={styles.coverTopRow}>
                   <span className={styles.maBaiGiang}>
                     <Hash size={10} style={{ marginRight: 2 }} />
@@ -713,7 +703,9 @@ const BaiGiang = () => {
 
               {/* Body */}
               <div className={styles.cardBody}>
-                <h3 className={styles.cardTitle}>{baiGiang.ten_bai_giang}</h3>
+                <h3 className={styles.cardTitle}>
+                  <button onClick={() => openPreviewModal(baiGiang)}>{baiGiang.ten_bai_giang}</button>
+                </h3>
                 <p className={styles.cardDesc}>
                   {baiGiang.gioiThieu || "Chưa có mô tả"}
                 </p>
@@ -723,10 +715,7 @@ const BaiGiang = () => {
                     <Clock size={14} />
                     {baiGiang.thoi_gian_lam_bai || 15} phút
                   </div>
-                  <div className={styles.giaCoin}>
-                    <DollarSign size={14} />
-                    {baiGiang.giaBaiGiang === 0 ? "Miễn phí" : `${baiGiang.giaBaiGiang?.toLocaleString()}đ`}
-                  </div>
+                  <span className={styles.lessonType}><FileText size={14} />Tài liệu học tập</span>
                 </div>
               </div>
 
@@ -736,48 +725,32 @@ const BaiGiang = () => {
                   <button
                     className={styles.studyBtn}
                     onClick={async () => {
-                      const gia = baiGiang.giaBaiGiang || 0;
-
-                      if (gia > 0) {
-                        // Có phí -> kiểm tra số dư trước
-                        if (!user?.soDu || user.soDu < gia) {
-                          message.error(`Số dư không đủ! Cần ${gia.toLocaleString()}đ, bạn chỉ có ${(user?.soDu || 0).toLocaleString()}đ`);
-                          return;
-                        }
-
-                        try {
-                          await baiGiangThuongMaiAPI.muaBaiGiang(baiGiang._id, token);
-                          message.success("Đã thêm vào bộ sưu tập!");
-                        } catch (error) {
-                          if (error.response?.data?.message?.includes("đã mua")) {
-                            message.warning("Bài giảng này đã có trong bộ sưu tập!");
-                          } else {
-                            message.error(error.response?.data?.message || "Mua thất bại");
-                          }
-                        }
-                      } else {
-                        // Miễn phí -> mua luôn không cần kiểm tra số dư
-                        try {
-                          await baiGiangThuongMaiAPI.muaBaiGiang(baiGiang._id, token);
-                          message.success("Đã thêm vào bộ sưu tập!");
-                        } catch (error) {
-                          if (error.response?.data?.message?.includes("đã mua")) {
-                            message.warning("Bài giảng này đã có trong bộ sưu tập!");
-                          } else {
-                            message.error(error.response?.data?.message || "Mua thất bại");
-                          }
-                        }
+                      if (baiGiang.daSoHuu) {
+                        navigate(`/hoc-sinh/lam-bai/${baiGiang._id}`);
+                        return;
+                      }
+                      if (baiGiang.giaBaiGiang > 0) {
+                        message.info("Bài giảng này chưa được mở để thêm vào bộ sưu tập.");
+                        return;
+                      }
+                      try {
+                        await baiGiangThuongMaiAPI.muaBaiGiang(baiGiang._id, token);
+                        setBaiGiangList(previous => previous.map(item => item._id === baiGiang._id ? { ...item, daSoHuu: true } : item));
+                        message.success("Đã thêm vào bộ sưu tập!");
+                      } catch (error) {
+                        message.error(error.response?.data?.message || "Không thể thêm bài giảng vào bộ sưu tập");
                       }
                     }}
                   >
-                    <Plus size={16} />
-                    Thêm vào Bộ Sưu Tập
+                    {baiGiang.daSoHuu ? <Play size={16} /> : <Plus size={16} />}
+                    {baiGiang.daSoHuu ? 'Vào làm bài' : 'Thêm vào Bộ Sưu Tập'}
                   </button>
                 ) : (
                   <>
-                    <Tooltip title="Xem chi tiết câu hỏi">
+                    <Tooltip title="Đọc bài giảng">
                       <button
                         className={`${styles.iconBtn} ${styles.iconBtnPrimary}`}
+                        aria-label="Đọc bài giảng"
                         onClick={() => openPreviewModal(baiGiang)}
                       >
                         <EyeIcon size={15} />
@@ -968,7 +941,7 @@ const BaiGiang = () => {
                   input.click();
                 },
                 placeholder: "Nhập nội dung bài học...",
-                content_style: "body { font-family: 'Segoe UI', sans-serif; font-size: 14px; direction: ltr; text-align: left; }",
+                content_style: "@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&display=swap'); body { font-family: 'Nunito', sans-serif; font-size: 14px; direction: ltr; text-align: left; }",
               }}
             />
           </div>
@@ -983,23 +956,7 @@ const BaiGiang = () => {
                 <InputNumber min={1} max={180} style={{ width: "100%" }} size="large" />
               </Form.Item>
             </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="giaBaiGiang"
-                label={<span className={styles.formLabel}>Giá bài giảng (VNĐ)</span>}
-              >
-                <InputNumber
-                disabled
-                  min={0}
-                  step={1000}
-                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                  parser={(value) => value.replace(/,/g, "")}
-                  style={{ width: "100%" }}
-                  size="large"
-                  placeholder="0 = Miễn phí"
-                />
-              </Form.Item>
-            </Col>
+
           </Row>
 
           <div className={styles.modalActions}>
@@ -1023,8 +980,9 @@ const BaiGiang = () => {
       {/* Drawer Quản lý Câu Hỏi */}
       <Drawer
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        width={1200}
+        onClose={() => { if (!savingQuestions) setDrawerOpen(false); }}
+        width="min(1240px, 100vw)"
+        maskClosable={false}
         title={
           <div className={styles.drawerHeader}>
             <div className={styles.drawerHeaderIcon}>
@@ -1036,14 +994,16 @@ const BaiGiang = () => {
             </div>
           </div>
         }
-        className="customDrawer"
+        className={`customDrawer ${styles.questionDrawer}`}
         footer={
           <div className={styles.drawerFooter}>
-            <Button onClick={() => setDrawerOpen(false)}>Hủy</Button>
+            <span className={styles.footerStatus}><Check size={16} />{validQuestionCount}/{tempQuestions.length} câu hợp lệ</span>
+            <Button onClick={() => setDrawerOpen(false)} disabled={savingQuestions}>Đóng</Button>
             <Button
               type="primary"
               onClick={handleSaveQuestions}
               loading={savingQuestions}
+              disabled={!tempQuestions.length || validQuestionCount !== tempQuestions.length}
               className={styles.saveBtn}
             >
               <Save size={16} />
@@ -1124,30 +1084,31 @@ const BaiGiang = () => {
           )}
         </div> */}
 
+        <div className={styles.questionWorkspace} aria-busy={savingQuestions} style={savingQuestions ? { pointerEvents: "none", opacity: 0.7 } : undefined}>
+        <aside className={styles.questionSidebar}>
+          <div className={styles.bankHeading}><span>Ngân hàng câu hỏi</span><strong>{tempQuestions.length}</strong></div>
+          <p className={styles.bankHint}>Chọn một câu để chỉnh sửa nội dung và đáp án.</p>
         {/* Question Navigator */}
         <div className={styles.questionNav}>
           {tempQuestions.map((q, index) => (
-            <div
+            <button
+              type="button"
               key={index}
               ref={(el) => (questionRefs.current[`nav_${index}`] = el)}
               className={`${styles.questionNavItem} ${index === activeQuestionIndex ? styles.questionNavActive : ""}`}
-              onClick={() => {
-                setActiveQuestionIndex(index);
-                setExpandedQuestions((prev) => ({ ...prev, [index]: true }));
-                // Scroll vào câu hỏi
-                setTimeout(() => {
-                  questionRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 100);
-              }}
+              aria-pressed={index === activeQuestionIndex}
+              onClick={() => selectQuestion(index)}
             >
               <span className={styles.questionNavNumber}>{index + 1}</span>
-              {isQuestionValid(q) && <span className={styles.questionNavCheck}>✓</span>}
-            </div>
+              <span className={styles.questionNavPreview}>{questionText(q.noiDungCauHoi) || "Câu hỏi mới"}</span>
+              {isQuestionValid(q) && <Check size={14} className={styles.navValidIcon} />}
+            </button>
           ))}
           <button className={styles.addQuestionBtn} onClick={addNewQuestion} title="Thêm câu hỏi">
-            +
+            <Plus size={16} /> Thêm câu hỏi
           </button>
         </div>
+        </aside>
 
         {/* Question List */}
         <div className={styles.questionList}>
@@ -1161,24 +1122,16 @@ const BaiGiang = () => {
               </Button>
             </Empty>
           ) : (
-            tempQuestions.map((question, index) => (
+            tempQuestions.map((question, index) => index === activeQuestionIndex && (
               <div
                 key={index}
                 ref={(el) => (questionRefs.current[index] = el)}
                 className={`${styles.questionItem} ${index === activeQuestionIndex ? styles.questionItemActive : ""}`}
-                onClick={() => {
-                  setActiveQuestionIndex(index);
-                  setExpandedQuestions((prev) => ({ ...prev, [index]: true }));
-                  // Scroll vào câu hỏi
-                  setTimeout(() => {
-                    questionRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  }, 100);
-                }}
               >
                 <div className={styles.questionItemHeader}>
                   <div className={styles.questionItemLeft}>
                     <span className={styles.questionItemBadge}>{index + 1}</span>
-                    <span className={styles.questionItemLabel}>Câu hỏi</span>
+                    <span className={styles.questionItemLabel}>Câu hỏi {index + 1}</span>
                     {isQuestionValid(question) && (
                       <Tag color="success" className={styles.validTag}>Hợp lệ</Tag>
                     )}
@@ -1187,7 +1140,8 @@ const BaiGiang = () => {
                     <Tooltip title="Xóa câu hỏi">
                       <button
                         className={styles.deleteQuestionBtn}
-                        onClick={(e) => {
+                            aria-label="Xóa câu hỏi"
+                            onClick={(e) => {
                           e.stopPropagation();
                           removeQuestion(index);
                         }}
@@ -1219,7 +1173,7 @@ const BaiGiang = () => {
                         key={`question-editor-${index}`}
                         apiKey={TINYMCE_API_KEY}
                         initialValue={question.noiDungCauHoi || ""}
-                        onChange={(content) => {
+                        onEditorChange={(content) => {
                           if (typeof content === 'string') {
                             updateQuestionContent(index, content);
                           }
@@ -1278,7 +1232,7 @@ const BaiGiang = () => {
                           },
                           media_alt_source: true,
                           media_poster: false,
-                          content_style: "body { font-family: 'Segoe UI', sans-serif; font-size: 14px; direction: ltr; text-align: left; }",
+                          content_style: "@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&display=swap'); body { font-family: 'Nunito', sans-serif; font-size: 14px; direction: ltr; text-align: left; }",
                         }}
                       />
                     </div>
@@ -1317,16 +1271,14 @@ const BaiGiang = () => {
                                   updateAnswerField(answerIndex, e.target.value);
                                 }
                               }}
-                              onClick={() => {
-                                if (index === activeQuestionIndex) {
-                                  toggleCorrectAnswer(index, answerIndex);
-                                }
-                              }}
+                              aria-label={`Nội dung đáp án ${ANSWER_LETTERS[answerIndex]}`}
                             />
                             <button
                               className={`${styles.correctToggle} ${answer.laDapAnDung ? styles.correctToggleOn : ""}`}
                               onClick={() => toggleCorrectAnswer(index, answerIndex)}
                               title="Đánh dấu đáp án đúng"
+                              aria-label={`Chọn ${ANSWER_LETTERS[answerIndex]} là đáp án đúng`}
+                              aria-pressed={answer.laDapAnDung}
                             >
                               {answer.laDapAnDung ? <Check size={16} /> : <X size={16} />}
                             </button>
@@ -1353,20 +1305,20 @@ const BaiGiang = () => {
                         )}
                       >
                         <Lightbulb size={14} />
-                        {question.showGiaiThich ? "Ẩn Lưu ý" : "Thêm Lưu ý"}
+                        {question.showGiaiThich ? "Ẩn giải thích đáp án" : "Thêm giải thích đáp án"}
                       </button>
 
                       {question.showGiaiThich && (
                         <div className={styles.giaiThichBox}>
                           <label className={styles.editorLabel}>
                             <Lightbulb size={14} />
-                            Lưu ý
+                            Giải thích đáp án
                           </label>
                           <Editor
                             key={`giaithich-editor-${index}`}
                             apiKey={TINYMCE_API_KEY}
                             initialValue={question.giaiThich || ""}
-                            onChange={(content) => {
+                            onEditorChange={(content) => {
                               if (typeof content === 'string') {
                                 updateGiaiThichContent(index, content);
                               }
@@ -1383,7 +1335,7 @@ const BaiGiang = () => {
                                   updateGiaiThichContent(index, content);
                                 });
                               },
-                              content_style: "body { font-family: 'Segoe UI', sans-serif; font-size: 14px; direction: ltr; text-align: left; }",
+                              content_style: "@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&display=swap'); body { font-family: 'Nunito', sans-serif; font-size: 14px; direction: ltr; text-align: left; }",
                             }}
                           />
                         </div>
@@ -1395,256 +1347,24 @@ const BaiGiang = () => {
             ))
           )}
         </div>
-      </Drawer>
-
-      {/* Drawer Xem Chi Tiết Câu Hỏi */}
-      <Drawer
-        open={previewModalOpen}
-        onClose={() => setPreviewModalOpen(false)}
-        width={920}
-        title={<span style={{ fontSize: '18px', fontWeight: 700, color: '#1a1a2e' }}>📖 Chi tiết bài giảng</span>}
-        styles={{ body: { padding: 0, background: '#f8f9fa' } }}
-      >
-        <div style={{ height: 'calc(100vh - 110px)', overflowY: 'auto' }}>
-          {previewLoading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
-              <Spin size="large" />
-            </div>
-          ) : (
-            <>
-              {/* Header với thông tin bài giảng */}
-              <div style={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                padding: '24px 28px',
-                color: 'white'
-              }}>
-                <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, marginBottom: 8 }}>
-                  {previewBaiGiang?.ten_bai_giang}
-                </h2>
-                <div style={{ display: 'flex', gap: '20px', fontSize: '14px', opacity: 0.9 }}>
-                  <span>📋 {previewQuestions.length} câu hỏi</span>
-                  <span>⏱️ {previewBaiGiang?.thoi_gian_lam_bai || 0} phút</span>
-                </div>
-              </div>
-
-              {/* Nội dung bài học */}
-              {previewBaiGiang?.noi_dung_bai_hoc ? (
-                <div style={{
-                  margin: '24px 28px',
-                  background: 'white',
-                  borderRadius: '16px',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                  overflow: 'hidden'
-                }}>
-                  <div style={{
-                    padding: '16px 24px',
-                    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                    color: 'white',
-                    fontWeight: 700,
-                    fontSize: '15px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px'
-                  }}>
-                    <span style={{ fontSize: '20px' }}>📚</span> Nội dung bài học
-                  </div>
-                  <div style={{
-                    padding: '24px 28px',
-                    fontSize: '15px',
-                    lineHeight: 1.8,
-                    color: '#333',
-                    maxHeight: '400px',
-                    overflowY: 'auto'
-                  }}>
-                    <div dangerouslySetInnerHTML={{ __html: previewBaiGiang.noi_dung_bai_hoc }} />
-                  </div>
-                </div>
-              ) : (
-                <div style={{
-                  margin: '24px 28px',
-                  padding: '40px',
-                  background: 'white',
-                  borderRadius: '16px',
-                  textAlign: 'center',
-                  color: '#999',
-                  border: '2px dashed #e8e8e8'
-                }}>
-                  <FileText size={48} strokeWidth={1.5} style={{ marginBottom: '12px', opacity: 0.5 }} />
-                  <p style={{ margin: 0 }}>Chưa có nội dung bài học</p>
-                </div>
-              )}
-
-              {/* Danh sách câu hỏi */}
-              <div style={{ padding: '0 28px 28px' }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  marginBottom: '20px',
-                  padding: '16px 20px',
-                  background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
-                  borderRadius: '12px',
-                  color: 'white'
-                }}>
-                  <span style={{ fontSize: '24px' }}>❓</span>
-                  <span style={{ fontSize: '16px', fontWeight: 700 }}>Danh sách câu hỏi ({previewQuestions.length})</span>
-                </div>
-
-                {previewQuestions.length === 0 ? (
-                  <div style={{
-                    padding: '60px',
-                    background: 'white',
-                    borderRadius: '16px',
-                    textAlign: 'center',
-                    color: '#999'
-                  }}>
-                    <FileText size={48} strokeWidth={1.5} />
-                    <p style={{ marginTop: 16 }}>Chưa có câu hỏi nào</p>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    {previewQuestions.map((q, index) => (
-                      <div key={q._id || index} style={{
-                        background: 'white',
-                        borderRadius: '16px',
-                        boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
-                        overflow: 'hidden'
-                      }}>
-                        {/* Header câu hỏi */}
-                        <div style={{
-                          padding: '14px 20px',
-                          background: index % 2 === 0 
-                            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                            : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                          color: 'white',
-                          fontWeight: 700,
-                          fontSize: '14px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px'
-                        }}>
-                          <span style={{
-                            width: '28px',
-                            height: '28px',
-                            background: 'rgba(255,255,255,0.2)',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '13px'
-                          }}>
-                            {index + 1}
-                          </span>
-                          Câu hỏi số {index + 1}
-                        </div>
-
-                        {/* Nội dung câu hỏi */}
-                        <div style={{ padding: '20px 24px' }}>
-                          <div dangerouslySetInnerHTML={{ __html: q.noiDungCauHoi }} style={{
-                            padding: '16px 20px',
-                            background: '#f8f9fa',
-                            borderRadius: '12px',
-                            marginBottom: '20px',
-                            fontSize: '15px',
-                            lineHeight: 1.7,
-                            border: '1px solid #e8e8e8'
-                          }} />
-
-                          {/* Đáp án */}
-                          <div style={{ fontSize: '13px', fontWeight: 700, color: '#666', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            📝 Đáp án
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {(q.cacDapAn || []).map((answer, ansIndex) => (
-                              <div key={ansIndex} style={{
-                                display: 'flex',
-                                alignItems: 'flex-start',
-                                gap: '14px',
-                                padding: '14px 18px',
-                                background: answer.laDapAnDung ? 'linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%)' : '#fafafa',
-                                border: `2px solid ${answer.laDapAnDung ? '#52c41a' : '#e8e8e8'}`,
-                                borderRadius: '12px',
-                                transition: 'all 0.2s'
-                              }}>
-                                <span style={{
-                                  flexShrink: 0,
-                                  width: '32px',
-                                  height: '32px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  background: answer.laDapAnDung 
-                                    ? 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)'
-                                    : 'linear-gradient(135deg, #e8e8e8 0%, #d9d9d9 100%)',
-                                  color: answer.laDapAnDung ? 'white' : '#666',
-                                  borderRadius: '8px',
-                                  fontWeight: 800,
-                                  fontSize: '14px',
-                                  boxShadow: answer.laDapAnDung ? '0 2px 8px rgba(82,196,26,0.3)' : 'none'
-                                }}>
-                                  {String.fromCharCode(65 + ansIndex)}
-                                </span>
-                                <span dangerouslySetInnerHTML={{ __html: answer.noiDungDapAn }} style={{
-                                  flex: 1,
-                                  fontSize: '14px',
-                                  lineHeight: 1.6,
-                                  color: answer.laDapAnDung ? '#389e0d' : '#333'
-                                }} />
-                                {answer.laDapAnDung && (
-                                  <span style={{
-                                    flexShrink: 0,
-                                    padding: '4px 12px',
-                                    background: 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)',
-                                    color: 'white',
-                                    fontSize: '12px',
-                                    fontWeight: 700,
-                                    borderRadius: '20px',
-                                    boxShadow: '0 2px 8px rgba(82,196,26,0.3)'
-                                  }}>
-                                    ✓ Đáp án đúng
-                                  </span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Lưu ý / Giải thích */}
-                          {q.giaiThich && (
-                            <div style={{
-                              marginTop: '20px',
-                              padding: '16px 20px',
-                              background: 'linear-gradient(135deg, #fffbe6 0%, #ffe58f 100%)',
-                              border: '2px solid #ffc53d',
-                              borderRadius: '12px'
-                            }}>
-                              <div style={{
-                                fontSize: '14px',
-                                fontWeight: 700,
-                                color: '#d48806',
-                                marginBottom: '10px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px'
-                              }}>
-                                <span style={{ fontSize: '18px' }}>💡</span> Lưu ý / Giải thích
-                              </div>
-                              <div dangerouslySetInnerHTML={{ __html: q.giaiThich }} style={{
-                                fontSize: '14px',
-                                lineHeight: 1.7,
-                                color: '#8b572a'
-                              }} />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </>
-          )}
         </div>
+        {tempQuestions.length > 0 && <div className={styles.questionPager}>
+          <Button disabled={activeQuestionIndex === 0} onClick={() => selectQuestion(activeQuestionIndex - 1)}><ChevronLeft size={15} />Câu trước</Button>
+          <span>Câu {activeQuestionIndex + 1} / {tempQuestions.length}</span>
+          <Button disabled={activeQuestionIndex === tempQuestions.length - 1} onClick={() => selectQuestion(activeQuestionIndex + 1)}>Câu tiếp<ChevronRight size={15} /></Button>
+        </div>}
       </Drawer>
+
+      <LessonPreviewDrawer
+        open={previewModalOpen}
+        onClose={() => { previewRequest.current += 1; setPreviewModalOpen(false); }}
+        lesson={previewBaiGiang}
+        questions={previewQuestions}
+        loading={previewLoading}
+        error={previewError}
+        onRetry={() => openPreviewModal(previewBaiGiang)}
+        canViewAnswers={isManagement}
+      />
     </div>
   );
 };

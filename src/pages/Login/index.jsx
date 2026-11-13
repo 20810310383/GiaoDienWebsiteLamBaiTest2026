@@ -318,7 +318,7 @@ const DangNhap = () => {
   return (
     <div className={styles.authContainer}>
       <SecurityWrapper />
-      
+
       {/* Floating decorative shapes */}
       <div className={`${styles.floatingShape} ${styles.shape1}`} />
       <div className={`${styles.floatingShape} ${styles.shape2}`} />

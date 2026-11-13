@@ -2,7 +2,6 @@
    DASHBOARD LAYOUT — Medical Blue Theme
    ========================================= */
 
-@import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap");
 
 :root {
   --sidebar-width: 260px;
@@ -56,7 +55,7 @@
 }
 
 body {
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-family);
   background: var(--bg-base);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;

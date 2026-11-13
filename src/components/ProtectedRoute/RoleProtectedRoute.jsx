@@ -7,9 +7,9 @@ import { useAuth } from "../../contexts/AuthContext";
  * @param {string[]} allowedRoles - Mảng các vai trò được phép truy cập
  */
 const RoleProtectedRoute = ({ allowedRoles = [], children, fallbackPath = "/403" }) => {
-  const { user, isLoading, token } = useAuth();
+  const { user, loading } = useAuth();
 
-  if (isLoading) {
+  if (loading) {
     return <div>Đang tải hệ thống...</div>;
   }
 

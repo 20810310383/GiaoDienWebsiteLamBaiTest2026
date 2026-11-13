@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Button,
@@ -18,6 +18,7 @@ import {
   Drawer,
   Skeleton,
   Tag,
+  Pagination,
 } from "antd";
 import {
   Plus,
@@ -36,9 +37,12 @@ import {
   TrendingUp,
   CheckCircle,
   XCircle,
+  Columns3,
+  Columns4,
 } from "lucide-react";
 import styles from "./Classes.module.css";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useRealtime } from '../../../hook/useRealtime';
 import {
   getAllLopHoc,
   createLopHoc,
@@ -70,6 +74,15 @@ const Classes = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [searchKey, setSearchKey] = useState("");
+  const [search, setSearch] = useState("");
+  const [columns, setColumns] = useState(3);
+  const [rowsPerPage, setRowsPerPage] = useState(2);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [summary, setSummary] = useState({ totalClasses: 0, totalStudents: 0, pendingStudents: 0 });
+  const [loadError, setLoadError] = useState(false);
+  const requestId = useRef(0);
+  const pageSize = columns * rowsPerPage;
   const [form] = Form.useForm();
   const [joinForm] = Form.useForm();
   const [drawerSearch, setDrawerSearch] = useState("");
@@ -77,20 +90,42 @@ const Classes = () => {
   const isManagement = user?.role === "admin" || user?.role === "giaovien";
 
   useEffect(() => {
-    if (token) fetchClasses();
-  }, [token]);
+    const timer = setTimeout(() => {
+      setSearch(searchKey.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchKey]);
 
-  const fetchClasses = async () => {
-    setLoading(true);
+  const fetchClasses = useCallback(async (quiet = false) => {
+    const id = ++requestId.current;
+    if (!quiet) setLoading(true);
+    setLoadError(false);
     try {
-      const res = await getAllLopHoc({}, token);
-      setClasses(res);
+      const res = await getAllLopHoc({ page, limit: pageSize, search }, token);
+      if (id !== requestId.current) return;
+      setClasses(res.items);
+      setSelectedClass(previous => previous ? res.items.find(item => item._id === previous._id) || previous : null);
+      setTotal(res.pagination.total);
+      setSummary(res.summary);
+      setPage(res.pagination.page);
     } catch {
-      message.error("Phiên làm việc hết hạn");
+      if (id !== requestId.current) return;
+      setLoadError(true);
+      message.error("Không thể tải lớp học. Vui lòng thử lại.");
     } finally {
-      setTimeout(() => setLoading(false), 500);
+      if (id === requestId.current) setLoading(false);
     }
-  };
+  }, [token, page, pageSize, search]);
+  useRealtime(token, {
+    'class:membership': () => fetchClasses(true),
+    connect: () => fetchClasses(true),
+  });
+
+  useEffect(() => {
+    if (token) fetchClasses();
+    return () => { requestId.current += 1; };
+  }, [token, fetchClasses]);
 
   const handleRandomCode = () => {
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -164,14 +199,8 @@ const Classes = () => {
   };
 
 
-  const filteredClasses = classes.filter((c) =>
-    c.ten_lop?.toLowerCase().includes(searchKey.toLowerCase()),
-  );
-
-  const totalStudents = classes.reduce(
-    (acc, c) => acc + (c.danh_sach_hoc_vien?.length || 0),
-    0,
-  );
+  const firstItem = total ? (page - 1) * pageSize + 1 : 0;
+  const lastItem = Math.min(page * pageSize, total);
 
   // Hàm xử lý phê duyệt hoặc từ chối học viên
   const handleApprove = async (studentId, status) => {
@@ -213,7 +242,7 @@ const Classes = () => {
   };
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} style={{ "--class-columns": columns }}>
       {/* Subtle decorative mesh background */}
       <div className={styles.meshBg} aria-hidden />
 
@@ -225,10 +254,10 @@ const Classes = () => {
             <span>Hệ thống đào tạo</span>
           </div>
           <h1 className={styles.headerTitle}>
-            Lớp học <em>trực tuyến</em>
+            {isManagement ? "Quản lý " : "Khám phá "}<em>lớp học</em>
           </h1>
           <p className={styles.headerSub}>
-            Quản lý và theo dõi tiến độ học tập thời gian thực
+            Tập trung lớp học, kết nối học viên và bắt đầu những bài học mới.
           </p>
         </div>
 
@@ -237,6 +266,7 @@ const Classes = () => {
             <Search size={16} className={styles.searchIcon} />
             <input
               className={styles.searchInput}
+              aria-label="Tìm kiếm lớp học"
               placeholder="Tìm kiếm lớp học..."
               value={searchKey}
               onChange={(e) => setSearchKey(e.target.value)}
@@ -272,7 +302,7 @@ const Classes = () => {
             <Layers size={18} />
           </div>
           <div>
-            <div className={styles.statNum}>{classes.length}</div>
+            <div className={styles.statNum}>{summary.totalClasses}</div>
             <div className={styles.statLabel}>Lớp học</div>
           </div>
         </div>
@@ -284,7 +314,7 @@ const Classes = () => {
             <Users size={18} />
           </div>
           <div>
-            <div className={styles.statNum}>{totalStudents}</div>
+            <div className={styles.statNum}>{summary.totalStudents}</div>
             <div className={styles.statLabel}>Học viên</div>
           </div>
         </div>
@@ -296,8 +326,8 @@ const Classes = () => {
             <TrendingUp size={18} />
           </div>
           <div>
-            <div className={styles.statNum}>...</div>
-            <div className={styles.statLabel}>Hoàn thành</div>
+            <div className={styles.statNum}>{summary.pendingStudents}</div>
+            <div className={styles.statLabel}>Yêu cầu chờ duyệt</div>
           </div>
         </div>
         {/* <div className={styles.statCard}>
@@ -321,27 +351,68 @@ const Classes = () => {
         <span>Tất cả lớp học</span>
         <div className={styles.sectionLine} />
         <span className={styles.sectionCount}>
-          {filteredClasses.length} lớp
+          {total} lớp
         </span>
+      </div>
+
+      <div className={styles.listToolbar}>
+        <div className={styles.listHeading}>
+          <BookOpen size={20} />
+          <div>
+            <h2>{search ? "Kết quả tìm kiếm" : "Danh sách lớp học"}</h2>
+            <p aria-live="polite">{loading ? "Đang tải lớp học…" : loadError ? "Chưa thể tải dữ liệu" : `${firstItem}–${lastItem} trong ${total} lớp học`}</p>
+          </div>
+        </div>
+        <div className={styles.viewControls}>
+          <div className={styles.columnControl} role="group" aria-label="Số lớp mỗi hàng">
+            {[3, 4].map((value) => {
+              const Icon = value === 3 ? Columns3 : Columns4;
+              return (
+                <button key={value} type="button" aria-pressed={columns === value}
+                  className={columns === value ? styles.viewActive : ""}
+                  onClick={() => { setColumns(value); setPage(1); }}>
+                  <Icon size={16} /><span>{value} cột</span>
+                </button>
+              );
+            })}
+          </div>
+          <label className={styles.limitControl}>
+            <span>Mỗi trang</span>
+            <select value={rowsPerPage} aria-label="Số lớp mỗi trang"
+              onChange={(event) => { setRowsPerPage(Number(event.target.value)); setPage(1); }}>
+              {[2, 3, 4].map((rows) => <option key={rows} value={rows}>{rows * columns} lớp</option>)}
+            </select>
+          </label>
+          <button className={styles.refreshButton} type="button" onClick={fetchClasses} disabled={loading} aria-label="Tải lại danh sách lớp">
+            <RefreshCw size={17} />
+          </button>
+        </div>
       </div>
 
       {/* ─── GRID ───────────────────────────────── */}
       {loading ? (
         <div className={styles.grid}>
-          {[1, 2, 3, 4].map((n) => (
+          {Array.from({ length: pageSize }, (_, n) => (
             <div key={n} className={styles.skeletonCard}>
               <Skeleton active avatar paragraph={{ rows: 3 }} />
             </div>
           ))}
         </div>
-      ) : filteredClasses.length === 0 ? (
+      ) : loadError ? (
+        <div className={styles.emptyState} role="alert">
+          <RefreshCw size={36} />
+          <p>Không thể tải danh sách lớp học</p>
+          <button className={styles.btnSecondary} onClick={fetchClasses}>Thử lại</button>
+        </div>
+      ) : classes.length === 0 ? (
         <div className={styles.emptyState}>
           <BookOpen size={48} />
           <p>Không tìm thấy lớp học nào</p>
+          {search && <button className={styles.btnSecondary} onClick={() => setSearchKey("")}>Xóa tìm kiếm</button>}
         </div>
       ) : (
         <div className={styles.grid}>
-          {filteredClasses.map((item, idx) => {
+          {classes.map((item, idx) => {
             const studentCount =
               item.danh_sach_hoc_vien?.filter(
                 (sv) => sv.trang_thai_phe_duyet === "da_tham_gia",
@@ -363,8 +434,8 @@ const Classes = () => {
             // Kiểm tra học sinh đã được duyệt vào lớp chưa
             const myRecord = item.danh_sach_hoc_vien?.find(
               (sv) =>
-                sv.id_hoc_vien?._id === user?._id ||
-                sv.id_hoc_vien === user?._id,
+                sv.id_hoc_vien?._id === (user?._id || user?.id) ||
+                sv.id_hoc_vien === (user?._id || user?.id),
             );
             const isJoined = myRecord?.trang_thai_phe_duyet === "da_tham_gia";
             const isPending =
@@ -382,6 +453,7 @@ const Classes = () => {
                     src={cover}
                     alt={item.ten_lop}
                     className={styles.coverImg}
+                    loading="lazy"
                   />
                   <div className={styles.coverOverlay} />
                   <div className={styles.coverTopRow}>
@@ -398,13 +470,14 @@ const Classes = () => {
                 {/* Body */}
                 <div className={styles.cardBody}>
                   <h3
-                    className={isManagement ? styles.cardTitle : ''}
+                    className={styles.cardTitle}
                     onClick={() => isManagement && xemTrangBaiGiang(item)}
                     style={{ cursor: isManagement ? "pointer" : "default" }}
                     title={isManagement ? "Xem bài giảng của lớp" : ""}
                   >
                     {item.ten_lop}
                   </h3>
+                  <p className={styles.cardDescription}>{item.mo_ta_lop || "Không gian học tập và chia sẻ kiến thức cùng giảng viên."}</p>
 
                   <div className={styles.teacherRow}>
                     <Avatar
@@ -454,6 +527,7 @@ const Classes = () => {
                         <Tooltip title="Xem danh sách bài giảng của lớp">
                         <button
                           className={styles.iconBtn}
+                          aria-label="Xem bài giảng"
                           onClick={() => {
                             xemTrangBaiGiang(item);
                           }}
@@ -464,6 +538,7 @@ const Classes = () => {
                       <Tooltip title="Danh sách học viên">
                         <button
                           className={styles.iconBtn}
+                          aria-label="Danh sách học viên"
                           onClick={() => {
                             setSelectedClass(item);
                             setStudentListVisible(true);
@@ -475,6 +550,7 @@ const Classes = () => {
                       <Tooltip title="Chỉnh sửa">
                         <button
                           className={styles.iconBtn}
+                          aria-label="Chỉnh sửa lớp học"
                           onClick={() => openEdit(item)}
                         >
                           <Edit3 size={15} />
@@ -492,6 +568,7 @@ const Classes = () => {
                         <Tooltip title="Xóa lớp">
                           <button
                             className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
+                            aria-label="Xóa lớp học"
                           >
                             <Trash2 size={15} />
                           </button>
@@ -520,7 +597,7 @@ const Classes = () => {
                         setIsJoinModalOpen(true);
                       }}
                     >
-                      {isFull ? "Đã đầy chỗ" : "Yêu cầu tham gia"}
+                      {isFull ? "Đã đầy chỗ" : myRecord?.trang_thai_phe_duyet === 'bi_tu_choi' ? "Gửi lại yêu cầu" : "Yêu cầu tham gia"}
                       {!isFull && <ChevronRight size={15} />}
                     </button>
                   )}
@@ -528,6 +605,15 @@ const Classes = () => {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {!loadError && total > 0 && (
+        <div className={styles.paginationBar}>
+          <span>{firstItem}–{lastItem} / {total} lớp học</span>
+          <Pagination current={page} pageSize={pageSize} total={total}
+            disabled={loading} showSizeChanger={false} showLessItems
+            onChange={(nextPage) => setPage(nextPage)} />
         </div>
       )}
 

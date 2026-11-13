@@ -157,7 +157,7 @@
   border-radius: 20px;
   font-weight: 800;
   font-size: 16px;
-  font-family: "JetBrains Mono", monospace;
+  font-family: var(--font-family);
 }
 
 .pass {
@@ -310,7 +310,7 @@
   font-size: 20px;
   font-weight: 800;
   color: #1e293b;
-  font-family: "JetBrains Mono", monospace;
+  font-family: var(--font-family);
 }
 .scoreColor {
   color: #3b82f6;
