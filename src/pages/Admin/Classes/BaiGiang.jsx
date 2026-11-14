@@ -62,6 +62,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import styles from "./BaiGiang.module.css";
 import LessonPreviewDrawer from "./LessonPreviewDrawer";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useChat } from "../../../components/Chat/ChatContext";
 import {
   getAllBaiGiang,
   getBaiGiangByLopHoc,
@@ -83,6 +84,7 @@ const TINYMCE_API_KEY = "zjpcag3mx26mkofp78l7t8bmqyehvp1yqtapi5t9smj030pj";
 
 const BaiGiang = () => {
   const { token, user } = useAuth();
+  const { openChat } = useChat();
   const navigate = useNavigate();
   const { classId, className } = useParams();
 
@@ -631,7 +633,10 @@ const BaiGiang = () => {
                   <div className={styles.memberInfo}><strong>{member.ho_ten || 'Học viên'}{String(member._id) === String(user?._id || user?.id) && <small> Bạn</small>}</strong><span>{member.ma_so || 'Học viên trong lớp'}</span></div>
                   {String(member._id) !== String(user?._id || user?.id) && (
                     <div className={styles.memberActions} aria-label={`Liên hệ ${member.ho_ten || 'học viên'}`}>
-                      {[{ label: 'Nhắn tin', icon: MessageCircle }, { label: 'Gọi thoại', icon: Phone }, { label: 'Gọi video', icon: VideoCall }].map(({ label, icon: Icon }) => (
+                      <Tooltip title="Nhắn tin">
+                        <button type="button" className={styles.memberAction} aria-label={`Nhắn tin với ${member.ho_ten || 'học viên'}`} onClick={() => openChat(lopHocInfo._id, member._id)}><MessageCircle size={16} /></button>
+                      </Tooltip>
+                      {[{ label: 'Gọi thoại', icon: Phone }, { label: 'Gọi video', icon: VideoCall }].map(({ label, icon: Icon }) => (
                         <Tooltip title={`${label} · Sắp ra mắt`} key={label}>
                           <button type="button" className={styles.memberAction} aria-label={`${label} với ${member.ho_ten || 'học viên'} (sắp ra mắt)`} onClick={() => message.info(`Chức năng ${label.toLocaleLowerCase('vi')} đang được phát triển`)}><Icon size={16} /></button>
                         </Tooltip>

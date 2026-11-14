@@ -36,26 +36,7 @@
 
 /* ─── Decorative mesh background ─── */
 .meshBg {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background:
-    radial-gradient(
-      ellipse 80% 60% at 10% -10%,
-      rgba(24, 95, 165, 0.08) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 60% 50% at 90% 110%,
-      rgba(8, 145, 178, 0.07) 0%,
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse 40% 40% at 50% 50%,
-      rgba(15, 110, 86, 0.04) 0%,
-      transparent 60%
-    );
+  display: none;
 }
 
 /* ─── All sections sit above mesh ─── */
@@ -360,10 +341,7 @@
   border-radius: var(--radius-card);
   overflow: hidden;
   box-shadow: 0 4px 16px #1a3d5e06;
-  transition:
-    transform 0.28s var(--ease-spring),
-    box-shadow 0.28s var(--ease-out),
-    border-color 0.2s;
+  transition: border-color 0.18s;
 }
 
 @keyframes cardIn {
@@ -378,13 +356,7 @@
 }
 
 .classCard:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 30px #1a3d5e12;
   border-color: #bad2e8;
-}
-
-.classCard:hover .coverImg {
-  transform: scale(1.06);
 }
 
 /* Cover */
@@ -400,7 +372,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s var(--ease-out);
 }
 
 .coverOverlay {

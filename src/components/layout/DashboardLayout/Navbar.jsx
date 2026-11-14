@@ -71,7 +71,15 @@ const Navbar = ({ onToggleSidebar, sidebarOpen }) => {
   // Scroll detection
   useEffect(() => {
     const el = document.querySelector("main") || window;
-    const handler = () => setScrolled((el.scrollTop || window.scrollY) > 10);
+    let wasScrolled = null;
+    const handler = () => {
+      const next = (el === window ? window.scrollY : el.scrollTop) > 10;
+      if (next !== wasScrolled) {
+        wasScrolled = next;
+        setScrolled(next);
+      }
+    };
+    handler();
     el.addEventListener("scroll", handler, { passive: true });
     return () => el.removeEventListener("scroll", handler);
   }, []);

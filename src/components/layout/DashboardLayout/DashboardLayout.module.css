@@ -81,6 +81,11 @@ body {
 /* Keep the class list's long scrolling surface inexpensive to composite. */
 .classListLayout .ambientBg { display: none; }
 .classListLayout .contentInner { animation: none; }
+.classListLayout > aside {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: #fff;
+}
 .classListLayout .mainArea > header {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;

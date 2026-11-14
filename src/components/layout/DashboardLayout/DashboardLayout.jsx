@@ -5,6 +5,7 @@ import Sidebar from "./Sidebar";
 import styles from "./DashboardLayout.module.css";
 import { useAuth } from "../../../contexts/AuthContext";
 import UnfinishedExamReminder from '../../ProtectedRoute/UnfinishedExamReminder';
+import { ChatProvider } from '../../Chat/ChatContext';
 
 const DashboardLayout = () => {
   const { pathname } = useLocation();
@@ -28,7 +29,7 @@ const DashboardLayout = () => {
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
   return (
-    <div className={`${styles.root} ${isClassList ? styles.classListLayout : ""}`}>
+    <ChatProvider><div className={`${styles.root} ${isClassList ? styles.classListLayout : ""}`}>
       <UnfinishedExamReminder />
       {/* Ambient glow background */}
       <div className={styles.ambientBg}>
@@ -61,7 +62,7 @@ const DashboardLayout = () => {
           </div>
         </main>
       </div>
-    </div>
+    </div></ChatProvider>
   );
 };
 
