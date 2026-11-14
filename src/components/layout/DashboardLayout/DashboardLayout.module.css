@@ -78,6 +78,15 @@ body {
   overflow: hidden;
 }
 
+/* Keep the class list's long scrolling surface inexpensive to composite. */
+.classListLayout .ambientBg { display: none; }
+.classListLayout .contentInner { animation: none; }
+.classListLayout .mainArea > header {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: #fff;
+}
+
 .glow1 {
   position: absolute;
   width: 600px;

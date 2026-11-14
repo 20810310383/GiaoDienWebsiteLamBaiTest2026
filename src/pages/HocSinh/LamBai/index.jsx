@@ -64,8 +64,9 @@ const LamBai = () => {
   const autoSentRef = useRef(false);
   const clockOffset = useRef(0);
   const storageKey = 'exam:' + (user?._id || user?.id) + ':' + id;
+  const submittedRef = useRef(false);
   const saveDraft = () => {
-    if (!baiThi || result) return;
+    if (!baiThi || result || submittedRef.current) return;
     localStorage.setItem(storageKey, JSON.stringify({ attempt: baiThi.soLanThi, deadline: deadlineRef.current,
       answers: answersRef.current, currentQuestion }));
   };
@@ -209,7 +210,9 @@ const LamBai = () => {
       }, token);
 
       if (res.success) {
+        submittedRef.current = true;
         localStorage.removeItem(storageKey);
+        window.dispatchEvent(new Event('exam-draft-changed'));
         resumePending.current = false;
         setShowResume(false);
         setResult(res.data);
@@ -268,12 +271,12 @@ const LamBai = () => {
 
   // Kết quả
   if (result) {
-    const diemPhanTram = (result.soCauDung / result.tongSoCau * 100).toFixed(0);
+    const diemPhanTram = result.tongSoCau > 0 ? Math.round(result.soCauDung / result.tongSoCau * 100) : 0;
     const scoreClass = getScoreClass(result.diem);
     
     return (
       <div className={styles.resultPage}>
-        <div className={styles.resultCard}>
+        <div className={`${styles.resultCard} ${scoreClass}`}>
           {/* Background decoration */}
           <div className={styles.resultBg}>
             <div className={styles.resultBgCircle1} />
@@ -291,6 +294,7 @@ const LamBai = () => {
             </div>
 
             {/* Title */}
+            <p className={styles.resultSuccess}><CheckCircle size={16} /> Đã nộp bài thành công</p>
             <h1 className={styles.resultTitle}>Kết quả bài thi</h1>
             <p className={styles.resultSubtitle}>{baiThi.baiGiang.ten_bai_giang}</p>
 

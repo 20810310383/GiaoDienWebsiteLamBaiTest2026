@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import styles from "./DashboardLayout.module.css";
@@ -7,6 +7,8 @@ import { useAuth } from "../../../contexts/AuthContext";
 import UnfinishedExamReminder from '../../ProtectedRoute/UnfinishedExamReminder';
 
 const DashboardLayout = () => {
+  const { pathname } = useLocation();
+  const isClassList = pathname === "/lop-hoc";
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const { isLoggedIn, user, handleLogout } = useAuth();
@@ -26,7 +28,7 @@ const DashboardLayout = () => {
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
   return (
-    <div className={styles.root}>
+    <div className={`${styles.root} ${isClassList ? styles.classListLayout : ""}`}>
       <UnfinishedExamReminder />
       {/* Ambient glow background */}
       <div className={styles.ambientBg}>

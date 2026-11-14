@@ -445,7 +445,6 @@ const Classes = () => {
               <div
                 key={item._id}
                 className={styles.classCard}
-                style={{ animationDelay: `${idx * 0.06}s` }}
               >
                 {/* Cover image */}
                 <div className={styles.cardCover}>
@@ -454,6 +453,7 @@ const Classes = () => {
                     alt={item.ten_lop}
                     className={styles.coverImg}
                     loading="lazy"
+                    decoding="async"
                   />
                   <div className={styles.coverOverlay} />
                   <div className={styles.coverTopRow}>

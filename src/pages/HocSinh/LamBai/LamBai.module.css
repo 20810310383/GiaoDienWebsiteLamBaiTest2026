@@ -1411,3 +1411,52 @@
 }
 @media (prefers-reduced-motion: reduce) { .examPage *, .examPage *::before { animation: none !important; transition: none !important; } }
 .leaveWarning { color: #64748b; line-height: 1.8; margin: 14px 0 24px; }
+
+/* Result summary */
+.resultPage { min-height: calc(100dvh - 80px); padding: 40px 20px; background: var(--bg-main, #f3f6fa); overflow: visible; }
+.resultCard { max-width: 640px; border: 1px solid var(--border-light, #e2e8f0); border-radius: 24px; background: var(--bg-card, #fff); box-shadow: 0 16px 48px #18345112; }
+.resultContent { padding: 32px 40px; }
+.resultBg { height: 150px; background: linear-gradient(135deg, #185fa508, #0891b208); }
+.resultSuccess { display: flex; align-items: center; justify-content: center; gap: 7px; color: #15803d; font-size: .85rem; font-weight: 600; margin: 0 0 12px; }
+.resultTitle { font-size: clamp(1.5rem, 4vw, 2rem); }
+.resultSubtitle { line-height: 1.6; overflow-wrap: anywhere; margin-bottom: 24px; }
+.resultIconWrap { width: 52px; height: 52px; border-radius: 16px; }
+.scoreRing { width: 164px; height: 164px; border: 8px solid var(--border-light, #e2e8f0); border-radius: 50%; }
+.scoreSvg { transform: none; position: absolute; inset: -8px; width: calc(100% + 16px); height: calc(100% + 16px); }
+.scoreValue { font-size: 3rem; }
+.resultStats { padding: 22px 12px; background: var(--bg-muted, #f5f8fc); border: 1px solid var(--border-light, #e2e8f0); }
+.statValue { font-size: 1.65rem; }
+.statLabel { text-transform: none; letter-spacing: 0; font-size: .8rem; margin-top: 4px; }
+.resultBadge { background: transparent; margin-bottom: 20px; }
+.resultActions { border-top: 1px solid var(--border-light, #e2e8f0); padding-top: 22px; }
+.resultBtn { min-height: 48px; border-radius: 12px; }
+.resultBtnPrimary { background: #185fa5; box-shadow: none; }
+.resultBtn:focus-visible { outline: 3px solid #83b9e8; outline-offset: 3px; }
+@media (max-width: 600px) {
+  .resultPage { padding: 20px 12px; }
+  .resultContent { padding: 26px 18px; }
+  .resultCard { border-radius: 20px; }
+  .resultActions { flex-direction: column; }
+  .statItem { padding: 0 4px; }
+}
+@media (prefers-reduced-motion: reduce) { .resultCard, .resultCard * { animation: none; transition: none; } }
+
+/* Refined result screen */
+.resultPage { background: radial-gradient(circle at 15% 10%, #e0efff 0, transparent 34%), radial-gradient(circle at 90% 85%, #e4f7f1 0, transparent 30%), #f5f8fc; }
+.resultCard { background: #fff; border: 1px solid #e5edf5; box-shadow: 0 24px 70px rgba(31, 67, 105, .12); }
+.resultBg { height: 190px; background: linear-gradient(135deg, #f0f7ff, #f7fbff); border-bottom: 1px solid #edf3f9; }
+.resultContent { padding: 36px 48px; }
+.resultIconWrap { position: relative; width: 58px; height: 58px; box-shadow: 0 6px 18px #163d6a12; }
+.resultSuccess { color: #13845c; letter-spacing: .01em; }
+.resultTitle { color: #102e50; letter-spacing: -.035em; }
+.resultSubtitle { color: #71869d; font-size: .95rem; }
+.scoreRing { background: #fff; box-shadow: 0 10px 30px #193f6812; }
+.scoreValue { color: #102e50 !important; }
+.scoreLabel { font-size: .88rem; padding: 7px 18px; }
+.resultStats { background: #f7faff; border-color: #e9f0f8; }
+.statValue { color: #163657; }
+.statLabel { color: #738aa2; }
+.resultBadge { color: #71869d; }
+.resultBtnPrimary { background: linear-gradient(135deg, #1764b0, #247bc5); box-shadow: 0 8px 18px #1764b02b; }
+.resultBtnSecondary { background: #f2f6fb; border-color: #e4edf7; color: #315779; }
+@media (max-width: 600px) { .resultContent { padding: 28px 20px; } }

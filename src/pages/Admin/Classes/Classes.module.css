@@ -364,7 +364,6 @@
     transform 0.28s var(--ease-spring),
     box-shadow 0.28s var(--ease-out),
     border-color 0.2s;
-  animation: cardIn 0.4s var(--ease-out) both;
 }
 
 @keyframes cardIn {
@@ -430,8 +429,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #fff;
-  background: rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(6px);
+  background: rgba(4, 44, 83, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.25);
   padding: 3px 10px;
   border-radius: 100px;

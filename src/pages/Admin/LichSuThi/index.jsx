@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Select,
   Input,
@@ -13,6 +13,7 @@ import {
   Spin,
   Empty,
   Pagination,
+  Drawer,
 } from "antd";
 import {
   Search,
@@ -46,9 +47,10 @@ const LichSuThi = () => {
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 12,
     total: 0,
   });
+  const requestId = useRef(0);
 
   // Filters
   const [searchText, setSearchText] = useState("");
@@ -59,6 +61,11 @@ const LichSuThi = () => {
 
   // Modal chi tiết
   const [chiTietModal, setChiTietModal] = useState({ open: false, data: null, loading: false });
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [attempts, setAttempts] = useState([]);
+  const [attemptPage, setAttemptPage] = useState(1);
+  const [attemptTotal, setAttemptTotal] = useState(0);
+  const [attemptLoading, setAttemptLoading] = useState(false);
 
   // Thống kê
   const [thongKe, setThongKe] = useState(null);
@@ -106,6 +113,7 @@ const LichSuThi = () => {
   };
 
   const fetchData = async () => {
+    const currentRequest = ++requestId.current;
     setLoading(true);
     try {
       const params = {
@@ -113,6 +121,7 @@ const LichSuThi = () => {
         limit: pagination.pageSize,
         sortBy: "ngay_lam_bai",
         sortOrder: "desc",
+        group_by: "student",
       };
 
       if (searchText) params.search = searchText;
@@ -121,7 +130,13 @@ const LichSuThi = () => {
 
       const res = await getDanhSach(params, token);
 
+      if (currentRequest !== requestId.current) return;
       if (res.success) {
+        const lastPage = Math.max(1, Math.ceil(res.data.pagination.total / pagination.pageSize));
+        if (pagination.current > lastPage) {
+          setPagination(prev => ({ ...prev, current: lastPage, total: res.data.pagination.total }));
+          return;
+        }
         setData(res.data.items);
         setPagination((prev) => ({
           ...prev,
@@ -129,12 +144,28 @@ const LichSuThi = () => {
         }));
       }
     } catch (error) {
+      if (currentRequest !== requestId.current) return;
       console.error("Lỗi fetch data:", error);
       message.error("Không thể tải dữ liệu");
     } finally {
-      setLoading(false);
+      if (currentRequest === requestId.current) setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!selectedStudent?.studentId) return;
+    let active = true;
+    setAttemptLoading(true);
+    const params = { page: attemptPage, limit: 10, hoc_sinh_id: selectedStudent.studentId, sortBy: 'ngay_lam_bai', sortOrder: 'desc' };
+    if (filterLop) params.lop_hoc_id = filterLop;
+    if (filterBaiGiang) params.bai_giang_id = filterBaiGiang;
+    if (searchText) params.search = searchText;
+    getDanhSach(params, token).then(res => {
+      if (active && res.success) { setAttempts(res.data.items); setAttemptTotal(res.data.pagination.total); }
+    }).catch(() => { if (active) message.error('Không thể tải các lần thi'); })
+      .finally(() => { if (active) setAttemptLoading(false); });
+    return () => { active = false; };
+  }, [selectedStudent, attemptPage, filterLop, filterBaiGiang, searchText, token]);
 
   const handleSearch = (value) => {
     setSearchText(value);
@@ -226,6 +257,7 @@ const LichSuThi = () => {
       {/* Header */}
       <div className={styles.header}>
         <div>
+          <span className={styles.eyebrow}><BarChart3 size={14} /> TỔNG QUAN HỌC TẬP</span>
           <h1 className={styles.title}>Lịch sử thi</h1>
           <p className={styles.subtitle}>
             Xem lịch sử làm bài thi của học viên
@@ -334,7 +366,7 @@ const LichSuThi = () => {
               }}
               showSearch
               filterOption={(input, option) =>
-                option.children.props.children[1]
+                String(option.children)
                   .toLowerCase()
                   .includes(input.toLowerCase())
               }
@@ -348,12 +380,16 @@ const LichSuThi = () => {
           </div>
           <div className={styles.filterInfo}>
             <span>
-              Hiển thị <strong>{data.length}</strong> / <strong>{pagination.total}</strong> kết quả
+              Hiển thị <strong>{data.length}</strong> / <strong>{pagination.total}</strong> học viên
             </span>
           </div>
         </div>
       </Card>
 
+      <div className={styles.sectionHeading}>
+        <div><h2>Danh sách học viên</h2><p>Chọn học viên để xem chi tiết các lần thi</p></div>
+        <span>{pagination.total} học viên</span>
+      </div>
       {/* Card Grid View */}
       <div className={styles.cardGrid}>
         {loading ? (
@@ -368,110 +404,58 @@ const LichSuThi = () => {
         ) : (
           <>
             <Row gutter={[16, 16]}>
-              {data.map((record) => (
-                <Col key={record._id} xs={24} sm={12} lg={8} xl={6}>
-                  <div className={styles.historyCard}>
-                    {/* Card Header */}
-                    <div className={styles.cardHeader}>
-                      <div className={styles.cardUser}>
-                        <Avatar
-                          src={record.id_hoc_sinh?.anh_dai_dien ? getPublicUrl(record.id_hoc_sinh.anh_dai_dien) : null}
-                          size={44}
-                          style={{ backgroundColor: "#1890ff" }}
-                        >
-                          {record.id_hoc_sinh?.ho_ten?.charAt(0)}
-                        </Avatar>
-                        <div className={styles.cardUserInfo}>
-                          <span className={styles.cardUserName}>
-                            {record.id_hoc_sinh?.ho_ten || "N/A"}
-                          </span>
-                          <span className={styles.cardUserCode}>
-                            {record.id_hoc_sinh?.ma_so || "N/A"}
-                          </span>
-                          <span className={styles.cardUserCode}>
-                            {record.id_hoc_sinh?.ten_lop_sinh_hoat || "N/A"}
-                          </span>
-                        </div>
-                      </div>
-                      {renderDiem(record.diem)}
+              {data.map((group) => (
+                <Col key={group.studentId || group.latest} xs={24} sm={12} lg={8} xl={6}>
+                  <button type="button" className={styles.studentCard} onClick={() => { setAttempts([]); setAttemptPage(1); setSelectedStudent(group); }} disabled={!group.studentId}>
+                    <div className={styles.studentTop}>
+                      <Avatar size={52} src={group.student?.anh_dai_dien ? getPublicUrl(group.student.anh_dai_dien) : null} className={styles.studentAvatar}>{group.student?.ho_ten?.charAt(0) || '?'}</Avatar>
+                      <div className={styles.studentIdentity}><strong>{group.student?.ho_ten || 'Học viên không còn tồn tại'}</strong><span>{group.student?.ma_so || 'Chưa có mã học viên'}</span></div>
+                      <span className={styles.attemptBadge}>{group.count} lần thi</span>
                     </div>
-
-                    {/* Card Body */}
-                    <div className={styles.cardBody}>
-                      <div className={styles.cardInfoItem}>
-                        <span className={styles.cardLabel}>Bài giảng</span>
-                        <span className={styles.cardValue}>
-                          {record.id_bai_giang?.ten_bai_giang || "N/A"}
-                        </span>
-                      </div>
-                      <div className={styles.cardInfoItem}>
-                        <span className={styles.cardLabel}>Lớp học</span>
-                        <span className={styles.cardValue}>
-                          {record.id_lop_hoc?.ten_lop || "-"}
-                        </span>
-                      </div>
-                      <div className={styles.cardInfoItem}>
-                        <span className={styles.cardLabel}>Lần thi</span>
-                        <span className={styles.cardValue}>Lần {record.lan_thi}</span>
-                      </div>
-                      <div className={styles.cardInfoItem}>
-                        <span className={styles.cardLabel}>Kết quả</span>
-                        <span className={styles.cardValue}>
-                          <CheckCircle size={14} style={{ color: "#52c41a", marginRight: 4 }} />
-                          {record.so_cau_dung}/{record.tong_so_cau} câu đúng
-                        </span>
-                      </div>
-                      <div className={styles.cardInfoItem}>
-                        <span className={styles.cardLabel}>Thời gian</span>
-                        <span className={styles.cardValue}>
-                          <Clock size={14} style={{ marginRight: 4, color: "#666" }} />
-                          {formatThoiGian(record.thoi_gian_lam_bai)}
-                        </span>
-                      </div>
-                      <div className={styles.cardInfoItem}>
-                        <span className={styles.cardLabel}>Ngày thi</span>
-                        <span className={styles.cardValue}>
-                          {record.ngay_lam_bai ? new Date(record.ngay_lam_bai).toLocaleDateString("vi-VN") : "-"}
-                        </span>
-                      </div>
+                    <div className={styles.studentMetrics}>
+                      <div><span>Điểm trung bình</span><strong>{group.average.toFixed(1)}<small> / 10</small></strong></div>
+                      <div><span>Điểm cao nhất</span><strong>{group.best.toFixed(1)}<small> / 10</small></strong></div>
                     </div>
-
-                    {/* Card Footer */}
-                    <div className={styles.cardFooter}>
-                      {renderTrangThai(record.trang_thai)}
-                      <Button
-                        type="primary"
-                        size="small"
-                        icon={<Eye size={14} />}
-                        onClick={() => handleXemChiTiet(record)}
-                      >
-                        Chi tiết
-                      </Button>
-                    </div>
-                  </div>
+                    <div className={styles.studentBottom}><span><Clock size={15} /> Gần nhất: {formatNgay(group.latest)}</span><span>Xem lịch sử <span aria-hidden="true">→</span></span></div>
+                  </button>
                 </Col>
               ))}
             </Row>
 
             {/* Pagination */}
-            {pagination.total > pagination.pageSize && (
+            {pagination.total > 0 && (
               <div className={styles.paginationWrapper}>
                 <Pagination
                   current={pagination.current}
                   pageSize={pagination.pageSize}
                   total={pagination.total}
                   onChange={(page, pageSize) => {
-                    setPagination({ ...pagination, current: page, pageSize });
+                    setPagination(prev => ({ ...prev, current: pageSize !== prev.pageSize ? 1 : page, pageSize }));
                   }}
                   showSizeChanger
                   pageSizeOptions={["8", "12", "24", "48"]}
-                  showTotal={(total) => `Tổng ${total} bài thi`}
+                  showTotal={(total, range) => `${range[0]}–${range[1]} trong ${total} học viên`}
                 />
               </div>
             )}
           </>
         )}
       </div>
+
+      <Drawer title={selectedStudent?.student?.ho_ten || 'Lịch sử thi'} open={!!selectedStudent} onClose={() => setSelectedStudent(null)} width={640} className={styles.historyDrawer}>
+        <div className={styles.drawerIntro}><span>{selectedStudent?.student?.ma_so || 'Học viên'}</span><strong>{attemptTotal} lần thi phù hợp</strong></div>
+        <Spin spinning={attemptLoading}>
+          <div className={styles.attemptList}>
+            {!attemptLoading && attempts.length === 0 && <Empty description="Không có lần thi phù hợp" />}
+            {attempts.map(record => <article className={styles.attemptCard} key={record._id}>
+              <div className={styles.attemptHeading}><div><span className={styles.attemptClass}>{record.id_lop_hoc?.ten_lop || 'Lớp học'}</span><h3>{record.id_bai_giang?.ten_bai_giang || 'Bài giảng'}</h3></div>{renderDiem(Number(record.diem) || 0)}</div>
+              <div className={styles.attemptMeta}><span>Lần {record.lan_thi}</span><span><CheckCircle size={14} /> {record.so_cau_dung}/{record.tong_so_cau} câu đúng</span><span><Clock size={14} /> {formatThoiGian(record.thoi_gian_lam_bai)}</span><span>{formatNgay(record.ngay_lam_bai)}</span></div>
+              <div className={styles.attemptFooter}>{renderTrangThai(record.trang_thai)}<Button type="primary" icon={<Eye size={14} />} onClick={() => handleXemChiTiet(record)}>Xem chi tiết</Button></div>
+            </article>)}
+          </div>
+        </Spin>
+        {attemptTotal > 10 && <Pagination className={styles.drawerPagination} current={attemptPage} pageSize={10} total={attemptTotal} showSizeChanger={false} onChange={setAttemptPage} />}
+      </Drawer>
 
       {/* Modal chi tiết */}
       <ChiTietBaiThiModal

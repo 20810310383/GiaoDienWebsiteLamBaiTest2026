@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  Avatar,
   Button,
   Modal,
   Form,
@@ -20,6 +21,10 @@ import {
   Spin,
 } from "antd";
 import {
+  Users,
+  MessageCircle,
+  Phone,
+  Video as VideoCall,
   Plus,
   RefreshCw,
   Edit3,
@@ -85,6 +90,7 @@ const BaiGiang = () => {
   // State chính
   const [baiGiangList, setBaiGiangList] = useState([]);
   const [lopHocInfo, setLopHocInfo] = useState(null);
+  const [memberSearch, setMemberSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBaiGiang, setEditingBaiGiang] = useState(null);
@@ -607,6 +613,38 @@ const BaiGiang = () => {
           )}
         </div>
       </div>
+
+      {!loading && lopHocInfo && (
+        <details className={styles.classMembers}>
+          <summary>
+            <span className={styles.membersHeadingIcon}><Users size={20} /></span>
+            <span className={styles.membersHeading}><strong>Học viên trong lớp</strong><small>Kết nối với các thành viên cùng lớp</small></span>
+            <span className={styles.memberCount}>{lopHocInfo.hocVien?.length || 0} học viên</span>
+            <ChevronDown size={18} />
+          </summary>
+          <div className={styles.membersBody}>
+            <Input className={styles.memberSearch} prefix={<Search size={17} />} placeholder="Tìm học viên theo tên hoặc mã số..." aria-label="Tìm học viên trong lớp" value={memberSearch} onChange={event => setMemberSearch(event.target.value)} allowClear />
+            <div className={styles.membersGrid}>
+              {(lopHocInfo.hocVien || []).filter(member => `${member.ho_ten || ''} ${member.ma_so || ''}`.toLocaleLowerCase('vi').includes(memberSearch.trim().toLocaleLowerCase('vi'))).map(member => (
+                <div className={styles.memberItem} key={member._id}>
+                  <Avatar className={styles.memberAvatar} size={48} src={member.anh_dai_dien ? getPublicUrl(member.anh_dai_dien) : undefined}>{member.ho_ten?.trim()?.charAt(0)?.toLocaleUpperCase('vi') || '?'}</Avatar>
+                  <div className={styles.memberInfo}><strong>{member.ho_ten || 'Học viên'}{String(member._id) === String(user?._id || user?.id) && <small> Bạn</small>}</strong><span>{member.ma_so || 'Học viên trong lớp'}</span></div>
+                  {String(member._id) !== String(user?._id || user?.id) && (
+                    <div className={styles.memberActions} aria-label={`Liên hệ ${member.ho_ten || 'học viên'}`}>
+                      {[{ label: 'Nhắn tin', icon: MessageCircle }, { label: 'Gọi thoại', icon: Phone }, { label: 'Gọi video', icon: VideoCall }].map(({ label, icon: Icon }) => (
+                        <Tooltip title={`${label} · Sắp ra mắt`} key={label}>
+                          <button type="button" className={styles.memberAction} aria-label={`${label} với ${member.ho_ten || 'học viên'} (sắp ra mắt)`} onClick={() => message.info(`Chức năng ${label.toLocaleLowerCase('vi')} đang được phát triển`)}><Icon size={16} /></button>
+                        </Tooltip>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            {!(lopHocInfo.hocVien || []).some(member => `${member.ho_ten || ''} ${member.ma_so || ''}`.toLocaleLowerCase('vi').includes(memberSearch.trim().toLocaleLowerCase('vi'))) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={memberSearch ? 'Không tìm thấy học viên phù hợp' : 'Lớp chưa có học viên'} />}
+          </div>
+        </details>
+      )}
 
       {/* Stats */}
       <div className={styles.statsRow}>
