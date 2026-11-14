@@ -33,6 +33,7 @@ import styles from "./BoSuuTap.module.css";
 import baiGiangThuongMaiAPI from "../../../services/baiGiangThuongMaiAPI";
 import { useAuth } from "../../../contexts/AuthContext";
 import { getPublicUrl } from "../../../utils/formatURL";
+import AiExplanation from "./AiExplanation";
 
 const BoSuuTap = () => {
   const navigate = useNavigate();
@@ -706,6 +707,14 @@ const BoSuuTap = () => {
                     <p dangerouslySetInnerHTML={{ __html: item.giaiThich }} />
                   </div>
                 </div>
+              )}
+              {dapAnChiTiet?.ketQua?.idKetQua && (
+                <AiExplanation
+                  key={`${dapAnChiTiet.ketQua.idKetQua}-${index}`}
+                  resultId={dapAnChiTiet.ketQua.idKetQua}
+                  index={index}
+                  token={token}
+                />
               )}
             </div>
           ))}

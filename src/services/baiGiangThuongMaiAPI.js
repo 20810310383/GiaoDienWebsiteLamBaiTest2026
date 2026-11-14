@@ -64,6 +64,15 @@ const baiGiangThuongMaiAPI = {
     return res.data;
   },
 
+  giaiThichAI: async (idKetQua, index, token) => {
+    const res = await axios.post(
+      `${API_URL}/api/bai-giang-thuong-mai/lich-su-thi/${idKetQua}/cau-hoi/${index}/giai-thich-ai`,
+      {},
+      getAuthHeaders(token)
+    );
+    return res.data;
+  },
+
   // Lịch sử thi (có phân trang và tìm kiếm)
   getLichSuThi: async (token, params = {}) => {
     const { page = 1, limit = 10, search = "" } = params;
