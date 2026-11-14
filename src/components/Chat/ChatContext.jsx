@@ -3,6 +3,7 @@ import { io } from 'socket.io-client';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiFetchTongQuat } from '../../services/apiTongQuat';
 import ChatWidget from './ChatWidget';
+import { useSounds } from '../Sound/SoundContext';
 
 const ChatContext = createContext(null);
 export const useChat = () => useContext(ChatContext);
@@ -12,12 +13,14 @@ const createClientId = () => {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
 };
 const mergeMessages = (oldItems, newItems) => {
-  const map = new Map(oldItems.map(item => [String(item._id), item]));
+  const keyFor = item => `${item.type === 'call' ? 'call' : 'message'}:${item._id}`;
+  const map = new Map(oldItems.map(item => [keyFor(item), item]));
   for (const item of newItems) {
-    const previous = map.get(String(item._id));
-    map.set(String(item._id), { ...previous, ...item, deliveredAt: item.deliveredAt || previous?.deliveredAt || null, seenAt: item.seenAt || previous?.seenAt || null });
+    const key = keyFor(item);
+    const previous = map.get(key);
+    map.set(key, { ...previous, ...item, deliveredAt: item.deliveredAt || previous?.deliveredAt || null, seenAt: item.seenAt || previous?.seenAt || null });
   }
-  return [...map.values()].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt) || String(a._id).localeCompare(String(b._id)));
+  return [...map.values()].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt) || String(a._id).localeCompare(String(b._id)) || Number(a.type === 'call') - Number(b.type === 'call'));
 };
 const atOrBefore = (item, cursor) => {
   const difference = new Date(item.createdAt) - new Date(cursor.createdAt);
@@ -25,6 +28,7 @@ const atOrBefore = (item, cursor) => {
 };
 export function ChatProvider({ children }) {
   const { token, user } = useAuth();
+  const { play: playSound } = useSounds();
   const userId = String(user?._id || user?.id || '');
   const currentUser = useRef(userId);
   currentUser.current = userId;
@@ -45,6 +49,7 @@ export function ChatProvider({ children }) {
   const refreshTimer = useRef(null);
   const readsInFlight = useRef(new Set());
   const sendKey = useRef(null);
+  const notifiedMessages = useRef(new Set());
   const api = useCallback((path, method = 'GET', body) => apiFetchTongQuat(`/api/chat${path}`, { method, body, headers: { Authorization: `Bearer ${token}` } }), [token]);
   const refreshInbox = useCallback(async () => {
     if (!token) return;
@@ -66,11 +71,11 @@ export function ChatProvider({ children }) {
   }, [api, scheduleInboxRefresh]);
   const readThrough = useCallback(async (conversationId, through) => {
     if (!conversationId || !through?._id || document.visibilityState !== 'visible' || !document.hasFocus()) return;
-    const key = `${conversationId}:${through._id}`;
+    const key = `${conversationId}:${through.type === 'call' ? 'call' : 'message'}:${through._id}`;
     if (readsInFlight.current.has(key)) return;
     readsInFlight.current.add(key);
     try {
-      const result = await api(`/conversations/${conversationId}/read`, 'POST', { through: through._id });
+      const result = await api(`/conversations/${conversationId}/read`, 'POST', { through: through._id, throughType: through.type === 'call' ? 'call' : 'message' });
       if (currentUser.current !== userId) return;
       if (String(selectedRef.current?.conversationId) === String(conversationId)) {
         setMessages(current => current.map(item => String(item.recipientId) === userId && atOrBefore(item, result.through)
@@ -85,7 +90,7 @@ export function ChatProvider({ children }) {
   }, [api, scheduleInboxRefresh, userId]);
   const load = useCallback(async (conversation, before, version) => {
     const id = conversation.conversationId;
-    const res = await api(`/conversations/${id}/messages${before ? `?before=${encodeURIComponent(before)}` : ''}`);
+    const res = await api(`/conversations/${id}/messages${before ? `?before=${encodeURIComponent(before._id)}&beforeType=${before.type === 'call' ? 'call' : 'message'}` : ''}`);
     if (selectionVersion.current !== version) return;
     setError('');
     setMessages(current => mergeMessages(current, res.items));
@@ -112,7 +117,7 @@ export function ChatProvider({ children }) {
     const conversation = selectedRef.current;
     if (!conversation || !messages.length || olderLoading) return;
     const version = selectionVersion.current; setOlderLoading(true);
-    try { await load(conversation, messages[0]._id, version); } catch { if (version === selectionVersion.current) setError('Không thể tải tin nhắn cũ.'); }
+    try { await load(conversation, messages[0], version); } catch { if (version === selectionVersion.current) setError('Không thể tải tin nhắn cũ.'); }
     finally { setOlderLoading(false); }
   }, [messages, olderLoading, load]);
   const send = useCallback(async text => {
@@ -135,6 +140,7 @@ export function ChatProvider({ children }) {
     const socket = io(import.meta.env.VITE_BACKEND_URL, { auth: { token }, withCredentials: true });
     socket.on('connect', async () => {
       setConnected(true);
+      window.dispatchEvent(new Event('call:reconnected'));
       try {
         let cursor = null;
         do { const result = await api('/deliver-pending', 'POST', { cursor }); cursor = result.nextCursor; } while (cursor && active);
@@ -144,12 +150,28 @@ export function ChatProvider({ children }) {
       if (current && active) load(current, null, selectionVersion.current).catch(() => {});
     });
     socket.on('disconnect', () => setConnected(false));
+    const updateCallHistory = conversationId => {
+      scheduleInboxRefresh();
+      const current = selectedRef.current;
+      if (current && String(current.conversationId) === String(conversationId)) load(current, null, selectionVersion.current).catch(() => {});
+    };
+    socket.on('call:update', call => {
+      window.dispatchEvent(new CustomEvent('call:update', { detail: call }));
+      if (['ended', 'missed', 'declined'].includes(call.status)) updateCallHistory(call.conversationId);
+    });
+    socket.on('chat:call-history', payload => updateCallHistory(payload.conversationId));
     socket.on('chat:message', payload => {
       if (!active) return;
       const id = String(payload.conversationId), item = payload.message;
       const isSelected = String(selectedRef.current?.conversationId) === id;
       if (isSelected) setMessages(current => mergeMessages(current, [item]));
       if (String(item.recipientId) === userId) {
+        const messageId = String(item._id);
+        if (!notifiedMessages.current.has(messageId)) {
+          notifiedMessages.current.add(messageId);
+          if (notifiedMessages.current.size > 500) notifiedMessages.current.delete(notifiedMessages.current.values().next().value);
+          playSound('message');
+        }
         if (isSelected && document.visibilityState === 'visible' && document.hasFocus()) readThrough(id, item);
         else receipt(id, [item._id], false);
       }
@@ -169,7 +191,7 @@ export function ChatProvider({ children }) {
       if (String(payload.readerId) === userId) scheduleInboxRefresh();
     });
     return () => { active = false; socket.disconnect(); setConnected(false); };
-  }, [token, userId, api, refreshInbox, scheduleInboxRefresh, receipt, readThrough, load]);
+  }, [token, userId, api, refreshInbox, scheduleInboxRefresh, receipt, readThrough, load, playSound]);
   useEffect(() => {
     const onFocus = () => {
       const current = selectedRef.current;
@@ -180,7 +202,7 @@ export function ChatProvider({ children }) {
     onFocus();
     return () => { window.removeEventListener('focus', onFocus); document.removeEventListener('visibilitychange', onFocus); };
   }, [messages, readThrough, userId]);
-  useEffect(() => { close(); setConversations([]); setInboxOpen(false); inboxVersion.current++; }, [userId, close]);
+  useEffect(() => { close(); setConversations([]); setInboxOpen(false); notifiedMessages.current.clear(); inboxVersion.current++; }, [userId, close]);
   const unread = conversations.reduce((sum, item) => sum + item.unread, 0);
   return <ChatContext.Provider value={{ openChat }}>{children}<ChatWidget {...{ selected, messages, conversations, inboxOpen, inboxError, setInboxOpen, loading, olderLoading, hasMore, sending, error, connected, userId, unread, openConversation, close, loadOlder, send, refreshInbox }} /></ChatContext.Provider>;
 }

@@ -38,3 +38,12 @@
 .host button:focus-visible { outline: 3px solid #8cc3ed; outline-offset: 2px; }.spin { animation: spin .9s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }
 @media (max-width: 480px) { .host { right: 0; bottom: 0; }.panel { width: 100vw; height: min(620px, 85dvh); border-radius: 20px 20px 0 0; }.launcher { margin: 0 16px 16px 0; }.composerHint { display: none; }.composer { padding-bottom: max(12px, env(safe-area-inset-bottom)); } }
 @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+
+.callRecord { display: flex; align-items: center; gap: 10px; width: fit-content; max-width: 100%; margin: 12px auto 16px; padding: 10px 14px; border: 1px solid #e3edf5; border-radius: 13px; background: #fff; color: #346180; }
+.callRecordIcon { display: grid; place-items: center; flex: 0 0 34px; width: 34px; height: 34px; border-radius: 10px; background: #e9f4fc; color: #2b78ad; }
+.callRecord > div { display: flex; flex-direction: column; min-width: 0; gap: 3px; }
+.callRecord strong { color: #31546d; font-size: 12px; font-weight: 700; }
+.callRecord > div > span { color: #8b9ead; font-size: 11px; }
+.callMissed { border-color: #f4e4e4; background: #fffbfb; }
+.callMissed .callRecordIcon { color: #d45d61; background: #fff0f0; }
+.callMissed strong { color: #ad5257; }

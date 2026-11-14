@@ -39,7 +39,11 @@ export async function apiFetchTongQuat(endpoint, { method = "GET", body, headers
     if (!res.ok) {
       // Nếu backend trả lỗi (status >= 400)
       const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.message || `Request failed with status ${res.status}`);
+      const error = new Error(errorData.message || `Request failed with status ${res.status}`);
+      error.status = res.status;
+      error.code = errorData.code;
+      error.data = errorData;
+      throw error;
     }
 
     return await res.json(); // dữ liệu JSON trả về
