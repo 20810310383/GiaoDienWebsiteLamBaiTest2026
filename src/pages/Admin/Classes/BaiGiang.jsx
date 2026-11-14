@@ -80,9 +80,16 @@ import {
 import { uploadAPI } from "../../../services/uploadAPI";
 import { getPublicUrl } from "../../../utils/formatURL";
 import baiGiangThuongMaiAPI from "../../../services/baiGiangThuongMaiAPI";
+import { setupScientificTools } from "../../../components/ScientificEditorTools";
 
 const { TextArea } = Input;
 const TINYMCE_API_KEY = "zjpcag3mx26mkofp78l7t8bmqyehvp1yqtapi5t9smj030pj";
+
+// initialValue must remain stable during typing; changing it resets TinyMCE's selection.
+const QuestionEditor = ({ initialValue, ...props }) => {
+  const initialContent = useRef(initialValue);
+  return <Editor {...props} initialValue={initialContent.current} />;
+};
 
 const presenceLabel = (status, now, error) => {
   if (!status) return error ? 'Không thể cập nhật trạng thái' : 'Đang cập nhật trạng thái';
@@ -1273,7 +1280,7 @@ const BaiGiang = () => {
                         <FileText size={14} />
                         Nội dung câu hỏi
                       </label>
-                      <Editor
+                      <QuestionEditor
                         key={`question-editor-${index}`}
                         apiKey={TINYMCE_API_KEY}
                         initialValue={question.noiDungCauHoi || ""}
@@ -1292,9 +1299,10 @@ const BaiGiang = () => {
                             "media", "table", "wordcount",
                           ],
                           toolbar:
-                            "undo redo | blocks | bold italic forecolor | alignleft aligncenter " +
+                            "undo redo | blocks | bold italic forecolor | superscript subscript sciencefraction sciencesymbols charmap | alignleft aligncenter " +
                             "alignright alignjustify | bullist numlist outdent indent | " +
                             "image media | table | removeformat | code",
+                          setup: setupScientificTools,
                           images_upload_handler: handleEditorUpload,
                           file_picker_types: "image media",
                           file_picker_callback: (callback, value, meta) => {
@@ -1418,7 +1426,7 @@ const BaiGiang = () => {
                             <Lightbulb size={14} />
                             Giải thích đáp án
                           </label>
-                          <Editor
+                          <QuestionEditor
                             key={`giaithich-editor-${index}`}
                             apiKey={TINYMCE_API_KEY}
                             initialValue={question.giaiThich || ""}

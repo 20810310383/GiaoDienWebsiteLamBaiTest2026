@@ -39,6 +39,7 @@ import {
   LockOutlined,
 } from "@ant-design/icons";
 import { Editor } from "@tinymce/tinymce-react";
+import { setupScientificTools } from "../../../components/ScientificEditorTools";
 import { getPublicUrl } from "../../../utils/formatURL";
 import { uploadAPI } from "../../../services/uploadAPI";
 import {
@@ -416,10 +417,7 @@ const CauHoiForm = ({ index, form, onRemove }) => {
                 form.setFieldValue("danhSachCauHoi", [...all]);
               }
             }}
-            // initialValue={initialNoiDungRef.current}
-            value={
-              form.getFieldValue(["danhSachCauHoi", index, "noiDungText"]) || ""
-            }
+            initialValue={initialNoiDungRef.current}
             init={{
               height: 350,
               menubar: true,
@@ -444,9 +442,10 @@ const CauHoiForm = ({ index, form, onRemove }) => {
                 "wordcount",
               ],
               toolbar:
-                "undo redo | blocks | bold italic forecolor | alignleft aligncenter " +
+                "undo redo | blocks | bold italic forecolor | superscript subscript sciencefraction sciencesymbols charmap | alignleft aligncenter " +
                 "alignright alignjustify | bullist numlist outdent indent | " +
                 "image media | removeformat | fullscreen code",
+              setup: setupScientificTools,
               images_upload_handler: handleEditorUpload,
               file_picker_types: "image media",
               file_picker_callback: (callback, value, meta) => {
