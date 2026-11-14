@@ -64,6 +64,7 @@ import LessonPreviewDrawer from "./LessonPreviewDrawer";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useChat } from "../../../components/Chat/ChatContext";
 import { useCall } from "../../../components/Call/CallContext";
+import { useRealtime } from "../../../hook/useRealtime";
 import {
   getAllBaiGiang,
   getBaiGiangByLopHoc,
@@ -83,6 +84,17 @@ import baiGiangThuongMaiAPI from "../../../services/baiGiangThuongMaiAPI";
 const { TextArea } = Input;
 const TINYMCE_API_KEY = "zjpcag3mx26mkofp78l7t8bmqyehvp1yqtapi5t9smj030pj";
 
+const presenceLabel = (status, now, error) => {
+  if (!status) return error ? 'Không thể cập nhật trạng thái' : 'Đang cập nhật trạng thái';
+  if (status.online) return 'Đang trực tuyến';
+  if (!status.lastSeenAt || !Number.isFinite(new Date(status.lastSeenAt).getTime())) return 'Ngoại tuyến · Chưa rõ lần hoạt động';
+  const minutes = Math.max(0, Math.floor((now - new Date(status.lastSeenAt).getTime()) / 60000));
+  if (minutes < 1) return 'Ngoại tuyến · Vừa hoạt động';
+  if (minutes < 60) return `Ngoại tuyến · ${minutes} phút trước`;
+  if (minutes < 1440) return `Ngoại tuyến · ${Math.floor(minutes / 60)} giờ trước`;
+  return `Ngoại tuyến · ${Math.floor(minutes / 1440)} ngày trước`;
+};
+
 const BaiGiang = () => {
   const { token, user } = useAuth();
   const { openChat } = useChat();
@@ -95,6 +107,47 @@ const BaiGiang = () => {
   const [baiGiangList, setBaiGiangList] = useState([]);
   const [lopHocInfo, setLopHocInfo] = useState(null);
   const [memberSearch, setMemberSearch] = useState("");
+  const [membersOpen, setMembersOpen] = useState(false);
+  const [presenceSocket, setPresenceSocket] = useState(null);
+  const [presence, setPresence] = useState({});
+  const [presenceError, setPresenceError] = useState(false);
+  const [presenceNow, setPresenceNow] = useState(Date.now());
+  const currentClassRef = useRef(null);
+  currentClassRef.current = lopHocInfo?._id ? String(lopHocInfo._id) : null;
+  const mergePresence = (items) => setPresence(previous => {
+    const next = { ...previous };
+    for (const item of items) {
+      if (!next[item.userId] || Number(item.observedAt) >= Number(next[item.userId].observedAt)) next[item.userId] = item;
+    }
+    return next;
+  });
+  useRealtime(token, {
+    connect: socket => { setPresenceError(false); setPresenceSocket(socket); },
+    disconnect: () => { setPresenceSocket(null); setPresence({}); setPresenceError(true); },
+    connect_error: () => { setPresenceSocket(null); setPresence({}); setPresenceError(true); },
+    'presence:update': item => { if (String(item.classId) === currentClassRef.current) mergePresence([item]); },
+  });
+  useEffect(() => {
+    const currentClass = lopHocInfo?._id && String(lopHocInfo._id);
+    setPresence({});
+    if (!presenceSocket || !currentClass || !membersOpen) return;
+    setPresenceError(false);
+    let active = true;
+    let retry;
+    const subscribe = () => presenceSocket.timeout(10000).emit('presence:subscribe', { classId: currentClass }, (error, result) => {
+      if (!active) return;
+      if (!error && result?.success && String(result.classId) === currentClass) { setPresenceError(false); mergePresence(result.items || []); }
+      else { setPresenceError(true); if (!result || error) retry = setTimeout(subscribe, 5000); }
+    });
+    subscribe();
+    return () => { active = false; clearTimeout(retry); presenceSocket.emit('presence:unsubscribe', { classId: currentClass }); };
+  }, [presenceSocket, lopHocInfo?._id, membersOpen]);
+  useEffect(() => {
+    if (!membersOpen) return;
+    setPresenceNow(Date.now());
+    const timer = setInterval(() => setPresenceNow(Date.now()), 30000);
+    return () => clearInterval(timer);
+  }, [membersOpen]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBaiGiang, setEditingBaiGiang] = useState(null);
@@ -536,6 +589,12 @@ const BaiGiang = () => {
       bg.ten_bai_giang?.toLowerCase().includes(searchKey.toLowerCase()) ||
       bg.maBaiGiang?.toLowerCase().includes(searchKey.toLowerCase())
   );
+  const teacher = lopHocInfo?.giaoVien;
+  const members = [
+    ...(teacher?._id ? [{ ...teacher, isTeacher: true }] : []),
+    ...(lopHocInfo?.hocVien || []).filter(member => String(member._id) !== String(teacher?._id)),
+  ];
+  const filteredMembers = members.filter(member => `${member.ho_ten || ''} ${member.ma_so || ''}`.toLocaleLowerCase('vi').includes(memberSearch.trim().toLocaleLowerCase('vi')));
 
 
   // Thống kê
@@ -619,20 +678,20 @@ const BaiGiang = () => {
       </div>
 
       {!loading && lopHocInfo && (
-        <details className={styles.classMembers}>
+        <details className={styles.classMembers} open={membersOpen} onToggle={event => setMembersOpen(event.currentTarget.open)}>
           <summary>
             <span className={styles.membersHeadingIcon}><Users size={20} /></span>
-            <span className={styles.membersHeading}><strong>Học viên trong lớp</strong><small>Kết nối với các thành viên cùng lớp</small></span>
-            <span className={styles.memberCount}>{lopHocInfo.hocVien?.length || 0} học viên</span>
+            <span className={styles.membersHeading}><strong>Thành viên trong lớp</strong><small>Kết nối với giảng viên và học viên</small></span>
+            <span className={styles.memberCount}>{members.length} thành viên</span>
             <ChevronDown size={18} />
           </summary>
           <div className={styles.membersBody}>
-            <Input className={styles.memberSearch} prefix={<Search size={17} />} placeholder="Tìm học viên theo tên hoặc mã số..." aria-label="Tìm học viên trong lớp" value={memberSearch} onChange={event => setMemberSearch(event.target.value)} allowClear />
+            <Input className={styles.memberSearch} prefix={<Search size={17} />} placeholder="Tìm thành viên theo tên hoặc mã số..." aria-label="Tìm thành viên trong lớp" value={memberSearch} onChange={event => setMemberSearch(event.target.value)} allowClear />
             <div className={styles.membersGrid}>
-              {(lopHocInfo.hocVien || []).filter(member => `${member.ho_ten || ''} ${member.ma_so || ''}`.toLocaleLowerCase('vi').includes(memberSearch.trim().toLocaleLowerCase('vi'))).map(member => (
+              {filteredMembers.map(member => (
                 <div className={styles.memberItem} key={member._id}>
                   <Avatar className={styles.memberAvatar} size={48} src={member.anh_dai_dien ? getPublicUrl(member.anh_dai_dien) : undefined}>{member.ho_ten?.trim()?.charAt(0)?.toLocaleUpperCase('vi') || '?'}</Avatar>
-                  <div className={styles.memberInfo}><strong>{member.ho_ten || 'Học viên'}{String(member._id) === String(user?._id || user?.id) && <small> Bạn</small>}</strong><span>{member.ma_so || 'Học viên trong lớp'}</span></div>
+                  <div className={styles.memberInfo}><strong>{member.ho_ten || 'Thành viên'}{member.isTeacher && <small>Giáo viên</small>}{String(member._id) === String(user?._id || user?.id) && <small>Bạn</small>}</strong><span>{member.ma_so || (member.isTeacher ? 'Giáo viên' : 'Học viên trong lớp')}</span><span className={`${styles.presenceStatus} ${presence[String(member._id)]?.online ? styles.presenceOnline : ''}`}><i aria-hidden="true" />{presenceLabel(presence[String(member._id)], presenceNow, presenceError)}</span></div>
                   {String(member._id) !== String(user?._id || user?.id) && (
                     <div className={styles.memberActions} aria-label={`Liên hệ ${member.ho_ten || 'học viên'}`}>
                       <Tooltip title="Nhắn tin">
@@ -648,7 +707,7 @@ const BaiGiang = () => {
                 </div>
               ))}
             </div>
-            {!(lopHocInfo.hocVien || []).some(member => `${member.ho_ten || ''} ${member.ma_so || ''}`.toLocaleLowerCase('vi').includes(memberSearch.trim().toLocaleLowerCase('vi'))) && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={memberSearch ? 'Không tìm thấy học viên phù hợp' : 'Lớp chưa có học viên'} />}
+            {!filteredMembers.length && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={memberSearch ? 'Không tìm thấy thành viên phù hợp' : 'Lớp chưa có thành viên'} />}
           </div>
         </details>
       )}

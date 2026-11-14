@@ -2205,3 +2205,8 @@
 .memberAction:focus-visible { outline: 3px solid #91c4e9; outline-offset: 2px; }
 @media (max-width: 600px) { .classMembers summary { padding: 16px; } .membersBody { padding: 0 16px 16px; } .membersHeading small { display: none; } .classMembers .memberCount { font-size: 10px; } .memberItem { flex-wrap: wrap; } .memberInfo { min-width: 120px !important; } .memberActions { margin-left: auto; } }
 @media (prefers-reduced-motion: reduce) { .memberAction, .classMembers summary > svg:last-child { transition: none; } }
+
+.memberInfo > .presenceStatus { display: flex; align-items: center; gap: 6px; margin-top: 5px; color: #8194a6 !important; font-size: 11px !important; line-height: 1.35; }
+.memberInfo > .presenceStatus i { width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; background: #aab9c6; }
+.memberInfo > .presenceOnline { color: #19845f !important; }
+.memberInfo > .presenceOnline i { background: #22b77f; box-shadow: 0 0 0 3px #def5eb; }
